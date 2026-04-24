@@ -1,14 +1,152 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.gman.presentation.controller.GestionUsuariosController">
+
+    <VBox AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0"
+          spacing="0">
+
+        <!-- Encabezado -->
+        <HBox styleClass="modulo-header"
+              alignment="CENTER_LEFT"
+              spacing="16">
+            <VBox HBox.hgrow="ALWAYS" spacing="4">
+                <Label text="Gestión de Usuarios"
+                       styleClass="modulo-titulo"/>
+                <Label text="Administre los usuarios y sus roles en el sistema"
+                       styleClass="modulo-subtitulo"/>
+            </VBox>
+            <Button text="+ Nuevo Usuario"
+                    styleClass="btn-primario"
+                    onAction="#abrirRegistro"/>
+        </HBox>
+
+        <!-- Cuerpo -->
+        <VBox styleClass="modulo-body"
+              VBox.vgrow="ALWAYS"
+              spacing="12">
+
+            <!-- Buscador -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="busquedaField"
+                           promptText="Buscar usuario..."
+                           styleClass="campo-input"
+                           HBox.hgrow="ALWAYS"
+                           onKeyReleased="#filtrarUsuarios"/>
+            </HBox>
+
+            <!-- Tabla -->
+            <TableView fx:id="usuariosTable"
+                       VBox.vgrow="ALWAYS"
+                       maxWidth="Infinity"
+                       styleClass="tabla-datos">
+                <columns>
+                    <TableColumn fx:id="colUsername"
+                                 text="Usuario"
+                                 prefWidth="150"/>
+                    <TableColumn fx:id="colNombre"
+                                 text="Nombre"
+                                 prefWidth="220"/>
+                    <TableColumn fx:id="colRol"
+                                 text="Rol"
+                                 prefWidth="130"/>
+                    <!-- Columna de acciones generada desde el controller -->
+                    <TableColumn fx:id="colAcciones"
+                                 text="Acciones"
+                                 prefWidth="160"
+                                 sortable="false"/>
+                </columns>
+                <placeholder>
+                    <Label text="No hay usuarios registrados."
+                           styleClass="tabla-placeholder"/>
+                </placeholder>
+            </TableView>
+
+            <!-- Mensaje de estado -->
+            <Label fx:id="mensajeLabel"
+                   styleClass="mensaje-label"
+                   wrapText="true"
+                   visible="false"
+                   maxWidth="Infinity"/>
+
+        </VBox>
+
+    </VBox>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Panel de edición (overlay) — oculto por defecto
+         ═══════════════════════════════════════════════════════════════ -->
+    <StackPane fx:id="overlayPane"
+               AnchorPane.topAnchor="0"
+               AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0"
+               AnchorPane.rightAnchor="0"
+               visible="false"
+               style="-fx-background-color: rgba(0,0,0,0.45);">
+
+        <VBox styleClass="dialogo-panel"
+              spacing="16"
+              maxWidth="420"
+              maxHeight="340"
+              alignment="CENTER">
+
+            <Label fx:id="dialogoTitulo"
+                   text="Editar Usuario"
+                   styleClass="dialogo-titulo"/>
+
+            <GridPane hgap="12" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="110" halignment="RIGHT"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Usuario:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                       styleClass="campo-label"/>
+                <TextField fx:id="editUsername"
+                           GridPane.rowIndex="0" GridPane.columnIndex="1"
+                           styleClass="campo-input"
+                           editable="false"
+                           style="-fx-opacity: 0.7;"/>
+
+                <Label text="Nombre:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                       styleClass="campo-label"/>
+                <TextField fx:id="editNombre"
+                           GridPane.rowIndex="1" GridPane.columnIndex="1"
+                           styleClass="campo-input"/>
+
+                <Label text="Nueva contraseña:" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                       styleClass="campo-label"/>
+                <PasswordField fx:id="editPassword"
+                               GridPane.rowIndex="2" GridPane.columnIndex="1"
+                               promptText="Dejar vacío para no cambiar"
+                               styleClass="campo-input"/>
+
+                <Label text="Rol:" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                       styleClass="campo-label"/>
+                <ComboBox fx:id="editRolCombo"
+                          GridPane.rowIndex="3" GridPane.columnIndex="1"
+                          maxWidth="Infinity"
+                          styleClass="campo-input"/>
+            </GridPane>
+
+            <!-- Botones del diálogo -->
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancelar"
+                        styleClass="btn-secundario"
+                        onAction="#cerrarDialogo"/>
+                <Button text="Guardar cambios"
+                        styleClass="btn-primario"
+                        onAction="#guardarEdicion"/>
+            </HBox>
+
+        </VBox>
+    </StackPane>
 
 </AnchorPane>

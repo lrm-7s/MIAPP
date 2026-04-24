@@ -1,2 +1,4 @@
-package com.example.gman.presentation.controller;public class ReportesController {
+package com.example.gman.presentation.controller;
+
+public class ReportesController {
 }

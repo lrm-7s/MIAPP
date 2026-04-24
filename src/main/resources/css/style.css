@@ -1,4 +1,375 @@
-.button {
-    -fx-font-size: 14px;
-    -fx-padding: 8px 20px;
+/* ============================= */
+/* Variables JavaFX */
+/* ============================= */
+.root {
+    -background-color: #1e1f22;
+
+    -gold-light: #ffe066;
+    -gold-medium: #ffc700;
+    -gold-dark: #ffb200;
+
+    -gold-hover-light: #fff2a8;
+    -gold-hover-medium: #ffd84d;
+    -gold-hover-dark: #ffc107;
+
+    -gold-pressed-light: #d6b800;
+    -gold-pressed-dark: #b89600;
+
+    -fx-background-color: -background-color;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
 }
+
+/* ============================= */
+/* Botón dorado PRO */
+/* ============================= */
+.button {
+    -fx-font-size: 13px;
+    -fx-padding: 10px 20px;
+
+    /* Estado normal (oscuro) */
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #e0e0e0;
+
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+
+    -fx-border-color: rgba(255,255,255,0.2);
+    -fx-border-width: 1px;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 6, 0.2, 0, 2);
+}
+
+/* Hover */
+.button:hover {
+    -fx-background-color: linear-gradient(
+        to bottom,
+        -gold-light,
+        -gold-medium,
+        -gold-dark
+    );
+
+    -fx-text-fill: #1f1f1f;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.3, 0, 3);
+}
+
+/* Pressed */
+.button:pressed {
+    -fx-background-color: linear-gradient(
+        to bottom,
+        -gold-pressed-light,
+        -gold-pressed-dark
+    );
+    -fx-translate-y: 1px;
+    -fx-effect: none;
+}
+
+/* Focus */
+.button:focused {
+    -fx-border-color: rgba(255,255,255,0.7);
+}
+
+/* Disabled */
+.button:disabled {
+    -fx-background-color: #6a6a6a;
+    -fx-text-fill: #cfcfcf;
+    -fx-opacity: 0.75;
+}
+
+/* Menú */
+.menu-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffe066, #ffc700, #ffb200);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.3, 0, 3);
+}
+
+.menu-btn:pressed {
+    -fx-background-color: linear-gradient(to bottom, #d6b800, #b89600);
+    -fx-effect: none;
+    -fx-translate-y: 1px;
+}
+
+/* Sidebar */
+.sidebar .menu-btn {
+    -fx-max-width: 138;
+}
+.texto-logo {
+     -fx-font-size: 18px;
+     -fx-text-fill: #ffd700; /* dorado */
+     -fx-font-weight: bold;
+ }
+ /* ═══════════════════════════════════════════
+    REGISTRO Y GESTIÓN DE USUARIOS
+ ═══════════════════════════════════════════ */
+
+ .registro-container {
+     -fx-background-color: white;
+     -fx-background-radius: 8;
+ }
+
+ .registro-header {
+     -fx-background-color: #1a3a5c;
+     -fx-padding: 24 32 24 32;
+ }
+
+ .registro-titulo {
+     -fx-text-fill: white;
+     -fx-font-size: 20px;
+     -fx-font-weight: bold;
+ }
+
+ .registro-subtitulo {
+     -fx-text-fill: #a8c4e0;
+     -fx-font-size: 12px;
+ }
+
+ .registro-form {
+     -fx-padding: 28 32 28 32;
+ }
+
+ .campo-label {
+     -fx-font-size: 12px;
+     -fx-font-weight: bold;
+     -fx-text-fill: #444;
+ }
+
+ .campo-input {
+     -fx-pref-height: 36px;
+     -fx-font-size: 13px;
+     -fx-border-color: #ccc;
+     -fx-border-radius: 4;
+     -fx-background-radius: 4;
+ }
+
+ .campo-input:focused {
+     -fx-border-color: #1a3a5c;
+ }
+
+ .btn-primario {
+     -fx-background-color: #1a3a5c;
+     -fx-text-fill: white;
+     -fx-font-size: 13px;
+     -fx-font-weight: bold;
+     -fx-padding: 8 20 8 20;
+     -fx-background-radius: 4;
+     -fx-cursor: hand;
+ }
+
+ .btn-primario:hover {
+     -fx-background-color: #24538a;
+ }
+
+ .btn-secundario {
+     -fx-background-color: transparent;
+     -fx-text-fill: #555;
+     -fx-font-size: 13px;
+     -fx-padding: 8 20 8 20;
+     -fx-border-color: #ccc;
+     -fx-border-radius: 4;
+     -fx-background-radius: 4;
+     -fx-cursor: hand;
+ }
+
+ .btn-secundario:hover {
+     -fx-background-color: #f0f0f0;
+ }
+
+ .mensaje-label {
+     -fx-font-size: 12px;
+     -fx-padding: 8 12 8 12;
+     -fx-background-radius: 4;
+ }
+
+ .mensaje-error {
+     -fx-text-fill: #c0392b;
+     -fx-background-color: #fdecea;
+ }
+
+ .mensaje-exito {
+     -fx-text-fill: #1e7e34;
+     -fx-background-color: #eafaf1;
+ }
+
+ /* Módulo general */
+ .modulo-container {
+     -fx-background-color: white;
+ }
+
+ .modulo-header {
+     -fx-background-color: #1a3a5c;
+     -fx-padding: 20 28 20 28;
+ }
+
+ .modulo-titulo {
+     -fx-text-fill: white;
+     -fx-font-size: 18px;
+     -fx-font-weight: bold;
+ }
+
+ .modulo-subtitulo {
+     -fx-text-fill: #a8c4e0;
+     -fx-font-size: 12px;
+ }
+
+ .modulo-body {
+     -fx-padding: 20 28 20 28;
+ }
+
+ .tabla-datos {
+     -fx-border-color: #e0e0e0;
+     -fx-border-radius: 4;
+ }
+
+ .tabla-placeholder {
+     -fx-text-fill: #999;
+     -fx-font-size: 13px;
+ }
+ /* ═══════════════════════════════════════════
+    SIDEBAR MEJORADO
+ ═══════════════════════════════════════════ */
+
+ .sidebar {
+     -fx-background-color: #1a3a5c;
+     -fx-min-width: 200px;
+     -fx-max-width: 200px;
+ }
+
+ .sidebar-logo {
+     -fx-padding: 20 12 16 12;
+     -fx-alignment: CENTER;
+ }
+
+ .texto-logo {
+     -fx-text-fill: white;
+     -fx-font-size: 26px;
+     -fx-font-weight: bold;
+ }
+
+ .sidebar-subtitulo {
+     -fx-text-fill: #a8c4e0;
+     -fx-font-size: 9px;
+     -fx-wrap-text: true;
+     -fx-alignment: CENTER;
+ }
+
+ /* ─── Info del usuario ─── */
+ .sidebar-usuario {
+     -fx-padding: 10 12 10 12;
+     -fx-background-color: #142d47;
+ }
+
+ .sidebar-label-pequeno {
+     -fx-text-fill: #7a9cbd;
+     -fx-font-size: 10px;
+ }
+
+ .sidebar-nombre-usuario {
+     -fx-text-fill: white;
+     -fx-font-size: 13px;
+     -fx-font-weight: bold;
+ }
+
+ .sidebar-rol-usuario {
+     -fx-text-fill: #f0a500;
+     -fx-font-size: 11px;
+     -fx-font-weight: bold;
+ }
+
+ /* ─── Botones del menú ─── */
+ .sidebar-menu {
+     -fx-padding: 8 8 8 8;
+ }
+
+ .menu-btn {
+     -fx-background-color: transparent;
+     -fx-text-fill: #cde0f5;
+     -fx-font-size: 12px;
+     -fx-alignment: CENTER_LEFT;
+     -fx-padding: 9 12 9 12;
+     -fx-background-radius: 6;
+     -fx-cursor: hand;
+     -fx-border-color: transparent;
+ }
+
+ .menu-btn:hover {
+     -fx-background-color: #24538a;
+     -fx-text-fill: white;
+ }
+
+ /* Botón exclusivo ADMIN */
+ .menu-btn-admin {
+     -fx-text-fill: #f0c060;
+ }
+
+ .menu-btn-admin:hover {
+     -fx-background-color: #2e4a1e;
+     -fx-text-fill: #f0e080;
+ }
+
+ /* ─── Footer del sidebar ─── */
+ .sidebar-footer {
+     -fx-padding: 8 8 12 8;
+ }
+
+ .menu-btn-logout {
+     -fx-background-color: transparent;
+     -fx-text-fill: #ff8080;
+     -fx-font-size: 12px;
+     -fx-alignment: CENTER_LEFT;
+     -fx-padding: 9 12 9 12;
+     -fx-background-radius: 6;
+     -fx-cursor: hand;
+ }
+
+ .menu-btn-logout:hover {
+     -fx-background-color: #5c1a1a;
+     -fx-text-fill: #ffaaaa;
+ }
+
+ /* ─── Barra de estado ─── */
+ .status-bar {
+     -fx-background-color: #e8edf2;
+     -fx-padding: 4 12 4 12;
+     -fx-border-color: #c8d4e0;
+     -fx-border-width: 1 0 0 0;
+ }
+
+ .status-label {
+     -fx-text-fill: #666;
+     -fx-font-size: 11px;
+ }
+
+ .status-separador {
+     -fx-text-fill: #aaa;
+     -fx-font-size: 11px;
+ }
+ .card-catalogo {
+     -fx-background-color: white;
+     -fx-padding: 15;
+     -fx-spacing: 10;
+     -fx-border-radius: 10;
+     -fx-background-radius: 10;
+
+     -fx-border-color: #d0d0d0;
+     -fx-border-width: 1;
+
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 2, 2);
+
+     -fx-min-width: 180;
+     -fx-pref-width: 200;
+     -fx-alignment: center;
+ }
+
+ .card-catalogo:hover {
+     -fx-border-color: #4a90e2;
+     -fx-cursor: hand;
+     -fx-effect: dropshadow(gaussian, rgba(74,144,226,0.4), 12, 0, 3, 3);
+ }
+
+ .card-title {
+     -fx-font-size: 14px;
+     -fx-font-weight: bold;
+ }

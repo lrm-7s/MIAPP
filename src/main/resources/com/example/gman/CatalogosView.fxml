@@ -1,14 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
-
+<AnchorPane prefHeight="600" prefWidth="900"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.gman.presentation.controller.CatalogoController">
+    <VBox AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0"
+          spacing="0">
+        <!-- HEADER -->
+        <HBox styleClass="modulo-header"
+              alignment="CENTER_LEFT"
+              spacing="16">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Gestión de Catálogos"
+                       styleClass="modulo-titulo"/>
+                <Label text="Administre los catálogos del sistema"
+                       styleClass="modulo-subtitulo"/>
+            </VBox>
+        </HBox>
+        <!-- CARDS -->
+        <FlowPane hgap="20"
+                  vgap="20"
+                  style="-fx-padding: 20;"
+                  prefWrapLength="850">
+            <!-- Departamento -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Departamento" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoDepartamento"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Código de Falla -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Código de Falla" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoCodigoFalla"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Tipos de Equipo -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Tipos de Equipo" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoTipoEquipo"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Proveedores -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Proveedores" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoProveedor"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Equipos -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Equipos" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoEquipo"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Localizaciones -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Localizaciones" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevaLocalizacion"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Empleados -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Empleados" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoEmpleado"
+                        styleClass="btn-secundario"/>
+            </VBox>
+            <!-- Misceláneos -->
+            <VBox styleClass="card-catalogo">
+                <Label text="Misceláneos" styleClass="card-title"/>
+                <Button text="Agregar"
+                        onAction="#nuevoMiscelaneo"
+                        styleClass="btn-secundario"/>
+            </VBox>
+        </FlowPane>
+        <!-- FOOTER -->
+        <Label text="GMAN"
+               style="-fx-font-size: 18px; -fx-font-weight: bold;"
+               AnchorPane.bottomAnchor="10"
+               AnchorPane.rightAnchor="10"/>
+    </VBox>
 </AnchorPane>
+<!---->

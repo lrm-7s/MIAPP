@@ -1,14 +1,234 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.gman.presentation.controller.EmpleadosController">
+
+    <VBox AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0"
+          spacing="0">
+
+        <!-- ── Encabezado ──────────────────────────────────────────── -->
+        <HBox styleClass="modulo-header"
+              alignment="CENTER_LEFT"
+              spacing="16">
+            <VBox HBox.hgrow="ALWAYS" spacing="4">
+                <Label text="Empleados"
+                       styleClass="modulo-titulo"/>
+                <Label text="Gestión del personal de la empresa"
+                       styleClass="modulo-subtitulo"/>
+            </VBox>
+            <Button text="+ Nuevo Empleado"
+                    styleClass="btn-primario"
+                    onAction="#abrirNuevo"/>
+        </HBox>
+
+        <!-- ── Cuerpo ─────────────────────────────────────────────── -->
+        <VBox styleClass="modulo-body"
+              VBox.vgrow="ALWAYS"
+              spacing="12">
+
+            <!-- Buscador -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="busquedaField"
+                           promptText="Buscar por nombre, departamento o posición..."
+                           styleClass="campo-input"
+                           HBox.hgrow="ALWAYS"
+                           onKeyReleased="#filtrarEmpleados"/>
+            </HBox>
+
+            <!-- Tabla principal -->
+            <TableView fx:id="empleadosTable"
+                       VBox.vgrow="ALWAYS"
+                       maxWidth="Infinity"
+                       styleClass="tabla-datos">
+                <columns>
+                    <TableColumn fx:id="colNumero"
+                                 text="#Emp."
+                                 prefWidth="70"/>
+                    <TableColumn fx:id="colNombre"
+                                 text="Nombre"
+                                 prefWidth="200"/>
+                    <TableColumn fx:id="colPosicion"
+                                 text="Posición"
+                                 prefWidth="160"/>
+                    <TableColumn fx:id="colDepartamento"
+                                 text="Departamento"
+                                 prefWidth="150"/>
+                    <TableColumn fx:id="colCorreo"
+                                 text="Correo"
+                                 prefWidth="200"/>
+                    <TableColumn fx:id="colAcciones"
+                                 text="Acciones"
+                                 prefWidth="160"
+                                 sortable="false"/>
+                </columns>
+                <placeholder>
+                    <Label text="No hay empleados registrados."
+                           styleClass="tabla-placeholder"/>
+                </placeholder>
+            </TableView>
+
+            <!-- Mensaje de estado -->
+            <Label fx:id="mensajeLabel"
+                   styleClass="mensaje-label"
+                   wrapText="true"
+                   visible="false"
+                   maxWidth="Infinity"/>
+
+        </VBox>
+    </VBox>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Panel de creación / edición (overlay)
+         ═══════════════════════════════════════════════════════════════ -->
+    <StackPane fx:id="overlayPane"
+               AnchorPane.topAnchor="0"
+               AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0"
+               AnchorPane.rightAnchor="0"
+               visible="false"
+               style="-fx-background-color: rgba(0,0,0,0.45);">
+
+        <ScrollPane fitToWidth="true"
+                    maxWidth="520"
+                    maxHeight="600"
+                    styleClass="dialogo-scroll">
+
+            <VBox styleClass="dialogo-panel"
+                  spacing="16">
+
+                <VBox.margin>
+                    <Insets top="0"/>
+                </VBox.margin>
+
+                <padding>
+                    <Insets top="24" right="24" bottom="24" left="24"/>
+                </padding>
+
+                <Label fx:id="dialogoTitulo"
+                       text="Empleado"
+                       styleClass="dialogo-titulo"/>
+
+                <!-- Formulario en grid de 2 columnas -->
+                <GridPane hgap="12" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="130" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <!-- Número de empleado (solo lectura) -->
+                    <Label text="N° Empleado:"
+                           GridPane.rowIndex="0" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fNumero"
+                               GridPane.rowIndex="0" GridPane.columnIndex="1"
+                               styleClass="campo-input" editable="false"
+                               style="-fx-opacity:0.7;" promptText="(auto)"/>
+
+                    <!-- Nombre -->
+                    <Label text="Nombre completo:"
+                           GridPane.rowIndex="1" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fNombre"
+                               GridPane.rowIndex="1" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="Nombre y apellidos"/>
+
+                    <!-- Dirección -->
+                    <Label text="Dirección:"
+                           GridPane.rowIndex="2" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fDireccion"
+                               GridPane.rowIndex="2" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="Dirección física"/>
+
+                    <!-- Posición -->
+                    <Label text="Posición:"
+                           GridPane.rowIndex="3" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fPosicion"
+                               GridPane.rowIndex="3" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="Cargo o puesto"/>
+
+                    <!-- Celular -->
+                    <Label text="Celular:"
+                           GridPane.rowIndex="4" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fCelular"
+                               GridPane.rowIndex="4" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="Número de contacto"/>
+
+                    <!-- Departamento -->
+                    <Label text="Departamento:"
+                           GridPane.rowIndex="5" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fDepartamento"
+                               GridPane.rowIndex="5" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="Área de la empresa"/>
+
+                    <!-- Correo -->
+                    <Label text="Correo electrónico:"
+                           GridPane.rowIndex="6" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fCorreo"
+                               GridPane.rowIndex="6" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="ejemplo@empresa.com"/>
+
+                    <!-- Separador visual -->
+                    <Separator GridPane.rowIndex="7" GridPane.columnIndex="0"
+                               GridPane.columnSpan="2"/>
+
+                    <!-- Salario por hora -->
+                    <Label text="Salario por hora:"
+                           GridPane.rowIndex="8" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fSalario"
+                               GridPane.rowIndex="8" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="0.00"/>
+
+                    <!-- Tiempo extra 1 -->
+                    <Label text="Tiempo extra 1 (factor):"
+                           GridPane.rowIndex="9" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fExtra1"
+                               GridPane.rowIndex="9" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="0.00"/>
+
+                    <!-- Tiempo extra 2 -->
+                    <Label text="Tiempo extra 2 (factor):"
+                           GridPane.rowIndex="10" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fExtra2"
+                               GridPane.rowIndex="10" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="0.00"/>
+
+                    <!-- Tiempo extra 3 -->
+                    <Label text="Tiempo extra 3 (factor):"
+                           GridPane.rowIndex="11" GridPane.columnIndex="0"
+                           styleClass="campo-label"/>
+                    <TextField fx:id="fExtra3"
+                               GridPane.rowIndex="11" GridPane.columnIndex="1"
+                               styleClass="campo-input" promptText="0.00"/>
+
+                </GridPane>
+
+                <!-- Botones del diálogo -->
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button text="Cancelar"
+                            styleClass="btn-secundario"
+                            onAction="#cerrarDialogo"/>
+                    <Button text="Guardar"
+                            styleClass="btn-primario"
+                            onAction="#guardar"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </StackPane>
 
 </AnchorPane>

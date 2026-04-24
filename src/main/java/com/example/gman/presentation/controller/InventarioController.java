@@ -1,2 +1,4 @@
-package com.example.gman.presentation.controller;public class InventarioController {
+package com.example.gman.presentation.controller;
+
+public class InventarioController {
 }

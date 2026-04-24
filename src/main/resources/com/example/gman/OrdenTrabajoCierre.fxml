@@ -1,14 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<AnchorPane prefWidth="780" prefHeight="580"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.gman.presentation.controller.OrdenTrabajoCierreController">
 
+    <VBox spacing="0" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <!-- TÍTULO -->
+        <HBox styleClass="modulo-header" alignment="CENTER_LEFT">
+            <Label text="Cerrar orden de trabajo" styleClass="modulo-titulo"/>
+        </HBox>
+
+        <!-- N° OT + Estado -->
+        <GridPane hgap="12" vgap="8"
+                  style="-fx-padding: 10 16; -fx-background-color: #fafafa;
+                         -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <Label text="N° de OT" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="tfNumeroOTCierre" editable="false"
+                       style="-fx-background-color: #efefef;" prefWidth="160"
+                       GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Estado" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                   style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="cbEstado" prefWidth="150"
+                      GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+        </GridPane>
+
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <VBox spacing="14" style="-fx-padding: 14 16;">
+
+                <!-- DETALLES FECHA/HORA -->
+                <Label text="Detalles fecha / hora"
+                       style="-fx-font-weight: bold; -fx-font-size: 13px;
+                              -fx-text-fill: #1565C0;"/>
+
+                <GridPane hgap="12" vgap="8">
+                    <!-- Cabecera columnas -->
+                    <Label text=""           GridPane.rowIndex="0" GridPane.columnIndex="0" prefWidth="130"/>
+                    <Label text="Estimado"   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                           style="-fx-font-weight: bold;" prefWidth="160"/>
+                    <Label text="Actual"     GridPane.rowIndex="0" GridPane.columnIndex="2"
+                           style="-fx-font-weight: bold;" prefWidth="160"/>
+                    <Label text="MP Programado" GridPane.rowIndex="0" GridPane.columnIndex="3"
+                           style="-fx-font-weight: bold;" prefWidth="160"/>
+
+                    <!-- Respuesta -->
+                    <Label text="Respuesta"  GridPane.rowIndex="1" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpRespuestaEst" prefWidth="160"
+                                GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <DatePicker fx:id="dpRespuestaReal" prefWidth="160"
+                                GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+                    <!-- Inicio -->
+                    <Label text="Inicio"     GridPane.rowIndex="2" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpInicioEst" prefWidth="160"
+                                GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <DatePicker fx:id="dpInicioReal" prefWidth="160"
+                                GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                    <DatePicker fx:id="dpInicioMP" prefWidth="160"
+                                GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+
+                    <!-- Término -->
+                    <Label text="Término"    GridPane.rowIndex="3" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpTerminoEst" prefWidth="160"
+                                GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    <DatePicker fx:id="dpTerminoReal" prefWidth="160"
+                                GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                    <DatePicker fx:id="dpTerminoMP" prefWidth="160"
+                                GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                </GridPane>
+
+                <!-- INFORME DE CIERRE -->
+                <Label text="Informe de cierre"
+                       style="-fx-font-weight: bold; -fx-font-size: 13px;
+                              -fx-text-fill: #1565C0;"/>
+
+                <GridPane hgap="12" vgap="8">
+                    <Label text="Fecha/Hora de entrega" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpFechaEntrega" prefWidth="180"
+                                GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                    <Label text="Duración estimada (días)" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                           style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="tfDuracion" prefWidth="100"
+                               GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                    <Label text="Código de fallas" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cbCodigoFalla" prefWidth="150"
+                              GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <TextField fx:id="tfDescFalla" prefWidth="180" editable="false"
+                               style="-fx-background-color: #efefef;"
+                               GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+                    <Label text="Aceptado por" GridPane.rowIndex="1" GridPane.columnIndex="3"
+                           style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="tfAceptadaPor" prefWidth="150"
+                               GridPane.rowIndex="1" GridPane.columnIndex="4"/>
+
+                    <Label text="Descripción de causa" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <TextArea fx:id="taDescCausa" prefHeight="60" wrapText="true"
+                              GridPane.rowIndex="2" GridPane.columnIndex="1"
+                              GridPane.columnSpan="4"/>
+
+                    <Label text="Acción realizada" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <TextArea fx:id="taAccionRealizada" prefHeight="60" wrapText="true"
+                              GridPane.rowIndex="3" GridPane.columnIndex="1"
+                              GridPane.columnSpan="4"/>
+
+                    <Label text="Prevención tomada" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <TextArea fx:id="taPrevencion" prefHeight="60" wrapText="true"
+                              GridPane.rowIndex="4" GridPane.columnIndex="1"
+                              GridPane.columnSpan="4"/>
+                </GridPane>
+
+            </VBox>
+        </ScrollPane>
+
+        <!-- MENSAJE -->
+        <Label fx:id="mensajeLabel" visible="false" managed="false"
+               style="-fx-padding: 4 16; -fx-font-size: 12px;"/>
+
+        <!-- BOTONES -->
+        <HBox spacing="10" alignment="CENTER_RIGHT"
+              style="-fx-padding: 10 16; -fx-background-color: #f5f5f5;
+                     -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+            <Button text="Guardar cierre" onAction="#guardarCierre" styleClass="btn-primario"/>
+            <Button text="Cancelar"       onAction="#cancelar"      styleClass="btn-secundario"/>
+        </HBox>
+
+    </VBox>
 </AnchorPane>

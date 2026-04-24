@@ -12,7 +12,6 @@ public class UsuariosViewModel {
 
     private final AuthService authService;
 
-    // Lista observable para la tabla de usuarios
     private final ObservableList<Usuario> usuarios =
             FXCollections.observableArrayList();
 
@@ -20,52 +19,61 @@ public class UsuariosViewModel {
         this.authService = authService;
     }
 
-    // ─── Roles disponibles para el ComboBox ─────────────────────────
+    // ─── Roles para el ComboBox ──────────────────────────────────────
     public ObservableList<Rol> getRolesDisponibles() {
         return FXCollections.observableArrayList(Rol.values());
     }
 
-    // ─── Lista de usuarios para la tabla ────────────────────────────
+    // ─── Lista observable para la tabla ─────────────────────────────
     public ObservableList<Usuario> getUsuarios() {
         return usuarios;
     }
 
     // ─── Registrar nuevo usuario ─────────────────────────────────────
-    /**
-     * Llama al AuthService para registrar.
-     * Lanza excepción con mensaje legible si algo falla.
-     */
     public void registrar(String username, String nombre,
                           String password, String confirmar,
                           Rol rol) throws Exception {
 
-        // Validación de contraseñas coincidentes (regla de UI)
-        if (!password.equals(confirmar)) {
+        if (!password.equals(confirmar))
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
-        }
 
-        // El resto de validaciones las maneja AuthService
         authService.register(username, nombre, password, rol);
     }
 
-    // ─── Cargar todos los usuarios desde la BD ───────────────────────
+    // ─── Cargar usuarios desde BD ────────────────────────────────────
     public void cargarUsuarios() throws Exception {
         usuarios.clear();
         List<Usuario> lista = authService.getAllUsuarios();
         usuarios.addAll(lista);
     }
 
-    // ─── Filtrar usuarios por texto de búsqueda ──────────────────────
+    // ─── Actualizar usuario existente ────────────────────────────────
+    /**
+     * @param username  Identificador (no cambia)
+     * @param nombre    Nuevo nombre completo
+     * @param password  Nueva contraseña en texto plano, o {@code null} para no cambiarla
+     * @param rol       Nuevo rol
+     */
+    public void actualizarUsuario(String username, String nombre,
+                                  String password, Rol rol) throws Exception {
+        authService.updateUser(username, nombre, password, rol);
+    }
+
+    // ─── Eliminar usuario ────────────────────────────────────────────
+    public void eliminarUsuario(String username) throws Exception {
+        authService.deleteUser(username);
+    }
+
+    // ─── Filtrar por texto ───────────────────────────────────────────
     public ObservableList<Usuario> filtrar(String texto) {
-        if (texto == null || texto.isBlank()) {
-            return usuarios;
-        }
+        if (texto == null || texto.isBlank()) return usuarios;
+
         String lower = texto.toLowerCase();
-        ObservableList<Usuario> filtrados =
-                FXCollections.observableArrayList();
+        ObservableList<Usuario> filtrados = FXCollections.observableArrayList();
+
         for (Usuario u : usuarios) {
             if (u.getUsername().toLowerCase().contains(lower) ||
-                    u.getNombre().toLowerCase().contains(lower) ||
+                    u.getNombre().toLowerCase().contains(lower)   ||
                     u.getRol().getDisplayName().toLowerCase().contains(lower)) {
                 filtrados.add(u);
             }

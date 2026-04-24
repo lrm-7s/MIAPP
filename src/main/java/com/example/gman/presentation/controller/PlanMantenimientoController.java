@@ -1,2 +1,4 @@
-package com.example.gman.presentation.controller;public class PlanMantenimientoController {
+package com.example.gman.presentation.controller;
+
+public class PlanMantenimientoController {
 }

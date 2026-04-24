@@ -1,14 +1,185 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<AnchorPane prefWidth="860" prefHeight="620"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.gman.presentation.controller.OrdenTrabajoFormController">
 
+    <VBox spacing="0" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <!-- TÍTULO -->
+        <HBox styleClass="modulo-header" alignment="CENTER_LEFT">
+            <Label fx:id="lblTitulo" text="Orden de trabajo nueva"
+                   styleClass="modulo-titulo"/>
+        </HBox>
+
+        <!-- CABECERA: N° OT + Fecha/Hora + Estado -->
+        <GridPane hgap="12" vgap="8"
+                  style="-fx-padding: 10 16; -fx-background-color: #fafafa;
+                         -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+
+            <Label text="N° de OT" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="tfNumeroOT" prefWidth="160"
+                       GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <Label text="Fecha/Hora de solicitud" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                   style="-fx-font-weight: bold;"/>
+            <!-- Solo lectura — se llena automáticamente -->
+            <TextField fx:id="tfFechaSolicitud" prefWidth="180" editable="false"
+                       style="-fx-background-color: #efefef;"
+                       GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+            <Label text="Estado" GridPane.rowIndex="0" GridPane.columnIndex="4"
+                   style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="cbEstado" prefWidth="130"
+                      GridPane.rowIndex="0" GridPane.columnIndex="5"/>
+        </GridPane>
+
+        <!-- CUERPO PRINCIPAL -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <HBox spacing="12" style="-fx-padding: 12 16;">
+
+                <!-- COLUMNA IZQUIERDA -->
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+
+                    <!-- Descripción -->
+                    <Label text="Descripción del trabajo" style="-fx-font-weight: bold;"/>
+                    <TextArea fx:id="taDescripcion" prefHeight="70" wrapText="true"/>
+
+                    <!-- Asignación -->
+                    <GridPane hgap="12" vgap="8">
+                        <Label text="Asignado a" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbAsignadoA" prefWidth="180"
+                                  GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Tipo de OT" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbTipoOT" prefWidth="160"
+                                  GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                        <Label text="Fecha/Hora requerida" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <DatePicker fx:id="dpFechaRequerida" prefWidth="180"
+                                    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Prioridad de OT" GridPane.rowIndex="1" GridPane.columnIndex="2"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbPrioridad" prefWidth="160"
+                                  GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+                        <Label text="N° de tarea" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold; -fx-text-fill: #aaa;"/>
+                        <TextField fx:id="tfNumTarea" prefWidth="180"
+                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Código de instrucción" GridPane.rowIndex="2" GridPane.columnIndex="2"
+                               style="-fx-font-weight: bold; -fx-text-fill: #aaa;"/>
+                        <TextField fx:id="tfCodigoInstruccion" prefWidth="160"
+                                   GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                    </GridPane>
+
+                    <!-- Sección equipo/localización -->
+                    <Label text="Información del equipo / localización"
+                           style="-fx-font-weight: bold; -fx-text-fill: #1565C0;
+                                  -fx-font-size: 13px; -fx-padding: 6 0 2 0;"/>
+
+                    <GridPane hgap="12" vgap="8">
+                        <Label text="N° de localización" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbLocalizacion" prefWidth="180"
+                                  GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <TextField fx:id="tfDescLocalizacion" prefWidth="200" editable="false"
+                                   style="-fx-background-color: #efefef;"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+
+                        <Label text="N° de equipo" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbEquipo" prefWidth="180"
+                                  GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <TextField fx:id="tfDescEquipo" prefWidth="200" editable="false"
+                                   style="-fx-background-color: #efefef;"
+                                   GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+                        <Label text="Estado del equipo" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <TextField fx:id="tfEstadoEquipo" prefWidth="180"
+                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Fecha de vencimiento" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <DatePicker fx:id="dpFechaVencimiento" prefWidth="180"
+                                    GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Notas para el técnico" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="taNotasTecnico" prefHeight="60" prefWidth="380"
+                                  wrapText="true"
+                                  GridPane.rowIndex="4" GridPane.columnIndex="1"
+                                  GridPane.columnSpan="2"/>
+
+                        <Label text="Recibido por" GridPane.rowIndex="5" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbRecibidoPor" prefWidth="180"
+                                  GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <Label text="Oficio" GridPane.rowIndex="5" GridPane.columnIndex="2"
+                               style="-fx-font-weight: bold;"/>
+                        <TextField fx:id="tfOficio" prefWidth="160"
+                                   GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+                    </GridPane>
+
+                    <!-- Empleados asignados (lista múltiple) -->
+                    <Label text="Empleados asignados" style="-fx-font-weight: bold;"/>
+                    <ListView fx:id="listEmpleados" prefHeight="100"/>
+
+                </VBox>
+
+                <!-- COLUMNA DERECHA — Información del empleado -->
+                <VBox spacing="8" prefWidth="220"
+                      style="-fx-border-color: #1565C0; -fx-border-radius: 6;
+                             -fx-background-radius: 6; -fx-padding: 10;
+                             -fx-background-color: #e8f0fe;">
+
+                    <Label text="Información de empleado"
+                           style="-fx-font-weight: bold; -fx-text-fill: #1565C0;
+                                  -fx-font-size: 13px;"/>
+
+                    <Label text="Nombre de empleado" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cbEmpleadoInfo" prefWidth="200"/>
+
+                    <Label text="Teléfono oficina" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="tfTelefonoOficina" editable="false"
+                               style="-fx-background-color: #efefef;" prefWidth="200"/>
+
+                    <Label text="Celular" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="tfCelularEmpleado" editable="false"
+                               style="-fx-background-color: #efefef;" prefWidth="200"/>
+
+                    <Label text="Correo electrónico" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="tfCorreoEmpleado" editable="false"
+                               style="-fx-background-color: #efefef;" prefWidth="200"/>
+                </VBox>
+
+            </HBox>
+        </ScrollPane>
+
+        <!-- MENSAJE -->
+        <Label fx:id="mensajeLabel" visible="false" managed="false"
+               style="-fx-padding: 4 16; -fx-font-size: 12px;"/>
+
+        <!-- BOTONES -->
+        <HBox spacing="10" alignment="CENTER_RIGHT"
+              style="-fx-padding: 10 16; -fx-background-color: #f5f5f5;
+                     -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+            <Button fx:id="btnGuardar" text="Guardar" onAction="#guardar"
+                    styleClass="btn-primario"/>
+            <Button text="Cancelar" onAction="#cancelar" styleClass="btn-secundario"/>
+        </HBox>
+
+    </VBox>
 </AnchorPane>

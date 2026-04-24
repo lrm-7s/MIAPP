@@ -1,14 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.gman.presentation.controller.EmpleadoFormController"
+      spacing="16"
+      styleClass="dialogo-panel">
 
-</AnchorPane>
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <!-- Título -->
+    <Label fx:id="dialogoTitulo"
+           text="Empleado"
+           styleClass="dialogo-titulo"/>
+
+    <!-- Formulario -->
+    <GridPane hgap="12" vgap="10">
+
+        <columnConstraints>
+            <ColumnConstraints minWidth="130" halignment="RIGHT"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Número -->
+        <Label text="N° Empleado:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="fNumero"
+                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                   editable="false"
+                   style="-fx-opacity:0.7;"
+                   promptText="(auto)"/>
+
+        <!-- Nombre -->
+        <Label text="Nombre completo:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="fNombre" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Dirección -->
+        <Label text="Dirección:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="fDireccion" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Posición -->
+        <Label text="Posición:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="fPosicion" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Celular -->
+        <Label text="Celular:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="fCelular" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <!-- Departamento -->
+        <Label text="Departamento:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextField fx:id="fDepartamento" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+        <!-- Correo -->
+        <Label text="Correo:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <TextField fx:id="fCorreo" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <Separator GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+
+        <!-- Salario -->
+        <Label text="Salario por hora:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+        <TextField fx:id="fSalario" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+        <!-- Extras -->
+        <Label text="Extra 1:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+        <TextField fx:id="fExtra1" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
+        <Label text="Extra 2:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+        <TextField fx:id="fExtra2" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+
+        <Label text="Extra 3:" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
+        <TextField fx:id="fExtra3" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+
+    </GridPane>
+
+    <!-- Mensaje -->
+    <Label fx:id="mensajeLabel"
+           styleClass="mensaje-label"
+           visible="false"
+           wrapText="true"/>
+
+    <!-- Botones -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancelar"
+                styleClass="btn-secundario"
+                onAction="#cancelar"/>
+
+        <Button text="Guardar"
+                styleClass="btn-primario"
+                onAction="#guardar"/>
+    </HBox>
+
+</VBox>

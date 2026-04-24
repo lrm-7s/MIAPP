@@ -1,69 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.*?>
 
-<GridPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gman.presentation.controller.MenuPrincipalController"
-          hgap="20" vgap="20" padding="20">
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.gman.presentation.controller.MainMenuController">
 
-   <!-- Fila 0 -->
-   <Button text="Equipos" GridPane.rowIndex="0" GridPane.columnIndex="0" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/imagenes/uno.png"/>
-      </graphic>
-   </Button>
+   <!-- ═══════════════════════════════════════
+        TOP — Barra de menú superior
+   ═══════════════════════════════════════ -->
+   <top>
+      <VBox>
+         <MenuBar prefHeight="34.0" prefWidth="600.0">
 
-   <Button text="Mano de Obra" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/manoobra.png"/>
-      </graphic>
-   </Button>
+            <Menu text="Archivo">
+               <MenuItem onAction="#logout" text="Cerrar Sesión" />
+               <MenuItem onAction="#exitApp" text="Salir" />
+            </Menu>
 
-   <Button text="Localizaciones" GridPane.rowIndex="0" GridPane.columnIndex="2" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/localizaciones.png"/>
-      </graphic>
-   </Button>
+            <Menu text="Módulos">
+               <MenuItem onAction="#openEquipos"           text="Equipos" />
+               <MenuItem onAction="#openEmpleados"         text="Empleados" />
+               <MenuItem onAction="#openOrdenTrabajo"      text="Orden de Trabajo" />
+               <MenuItem onAction="#openReportes"          text="Reportes" />
+               <MenuItem onAction="#openCatalogo"          text="Catálogo" />
+               <MenuItem onAction="#openPlanMantenimiento" text="Plan de Mantenimiento" />
+               <MenuItem onAction="#openHistorico"         text="Histórico" />
+               <MenuItem onAction="#openLocalizaciones"    text="Localizaciones" />
+               <MenuItem         text="Inventario" />
+               <SeparatorMenuItem />
+               <MenuItem onAction="#openGestionUsuarios"   text="Gestión de Usuarios" />
+            </Menu>
 
-   <Button text="Órdenes de Trabajo" GridPane.rowIndex="0" GridPane.columnIndex="3" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/ordenestrabajo.png"/>
-      </graphic>
-   </Button>
+            <Menu text="Ayuda">
+               <MenuItem onAction="#openAbout" text="Acerca de" />
+            </Menu>
 
-   <!-- Fila 1 -->
-   <Button text="Reportes" GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/reportes.png"/>
-      </graphic>
-   </Button>
+         </MenuBar>
+      </VBox>
+   </top>
 
-   <Button text="Catálogos" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/catalogos.png"/>
-      </graphic>
-   </Button>
+   <!-- ═══════════════════════════════════════
+        LEFT — Sidebar
+   ═══════════════════════════════════════ -->
+   <left>
+      <VBox prefWidth="200" spacing="0" styleClass="sidebar">
 
-   <Button text="Plan de Mantenimiento" GridPane.rowIndex="1" GridPane.columnIndex="2" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/planmantenimiento.png"/>
-      </graphic>
-   </Button>
+         <!-- LOGO -->
+         <VBox alignment="CENTER" spacing="2" styleClass="sidebar-logo">
+            <Label styleClass="texto-logo" text="GMAN" />
+            <Label styleClass="sidebar-subtitulo" text="Gestión de Mantenimiento" />
+         </VBox>
 
-   <Button text="Histórico" GridPane.rowIndex="1" GridPane.columnIndex="3" prefWidth="150" prefHeight="100">
-      <graphic>
-         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
-                    image="@/images/historico.png"/>
-      </graphic>
-   </Button>
+         <!-- INFO DEL USUARIO EN SESIÓN -->
+         <VBox prefHeight="18.0" prefWidth="200.0" spacing="4" styleClass="sidebar-usuario">
+            <Label styleClass="sidebar-label-pequeno" text="Usuario:" />
+            <Label fx:id="lblUsuario" styleClass="sidebar-nombre-usuario" text="—" />
+            <Label fx:id="lblRol"     styleClass="sidebar-rol-usuario"    text="—" />
+         </VBox>
 
-</GridPane>
+         <Separator prefWidth="200.0" />
+
+         <!-- BOTONES DE MÓDULOS -->
+         <VBox spacing="4" styleClass="sidebar-menu" VBox.vgrow="ALWAYS">
+
+            <Button fx:id="btnEquipos" maxWidth="Infinity"
+                    onAction="#openEquipos" styleClass="menu-btn" text="⚙  Equipos">
+               <tooltip><Tooltip text="Gestión de Equipos" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnEmpleados" maxWidth="Infinity"
+                    onAction="#openEmpleados" styleClass="menu-btn" text="👷  Mano de Obra">
+               <tooltip><Tooltip text="Gestión de Mano de Obra" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnOrdenTrabajo" maxWidth="Infinity"
+                    onAction="#openOrdenTrabajo" styleClass="menu-btn" text="📋  Orden de Trabajo">
+               <tooltip><Tooltip text="Gestión de Órdenes de Trabajo" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnReportes" maxWidth="Infinity"
+                    onAction="#openReportes" styleClass="menu-btn" text="📊  Reportes">
+               <tooltip><Tooltip text="Ver Reportes" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnCatalogo" maxWidth="Infinity"
+                    onAction="#openCatalogo" styleClass="menu-btn" text="📁  Catálogo">
+               <tooltip><Tooltip text="Gestión de Catálogos" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnPlanMantenimiento" maxWidth="Infinity"
+                    onAction="#openPlanMantenimiento" styleClass="menu-btn" text="🗓  Plan Mantenimiento">
+               <tooltip><Tooltip text="Plan de Mantenimiento" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnHistorico" maxWidth="Infinity"
+                    onAction="#openHistorico" styleClass="menu-btn" text="🕐  Histórico">
+               <tooltip><Tooltip text="Ver Histórico" /></tooltip>
+            </Button>
+
+            <Button fx:id="btnLocalizaciones" maxWidth="Infinity"
+                    onAction="#openLocalizaciones" styleClass="menu-btn" text="📍  Localizaciones">
+               <tooltip><Tooltip text="Gestión de Localizaciones" /></tooltip>
+            </Button>
+
+            <Separator />
+            <Button fx:id="btnInventario" maxWidth="Infinity"
+                    onAction="#openInventario" styleClass="menu-btn" text="📄 Inventario">
+               <tooltip><Tooltip text="Gestión de Equipos" /></tooltip>
+            </Button>
+
+            <!-- Solo visible para ADMIN -->
+            <Button fx:id="btnGestionUsuarios" maxWidth="Infinity"
+                    onAction="#openGestionUsuarios"
+                    styleClass="menu-btn menu-btn-admin" text="👥  Gestión de Usuarios">
+               <tooltip><Tooltip text="Administrar Usuarios y Roles" /></tooltip>
+            </Button>
+
+            <!-- Empleados — visibilidad controlada por rol -->
+
+         </VBox>
+
+         <!-- BOTÓN CERRAR SESIÓN al fondo -->
+         <VBox spacing="4" styleClass="sidebar-footer">
+            <Separator />
+            <Button maxWidth="Infinity" onAction="#logout"
+                    styleClass="menu-btn-logout" text="🚪  Cerrar Sesión" />
+         </VBox>
+
+      </VBox>
+   </left>
+
+   <!-- ═══════════════════════════════════════
+        CENTER — Contenido principal
+   ═══════════════════════════════════════ -->
+   <center>
+      <AnchorPane fx:id="contentPane" prefHeight="416.0" prefWidth="465.0"
+                  styleClass="content-area"
+                  AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+                  AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0" />
+   </center>
+
+   <!-- ═══════════════════════════════════════
+        BOTTOM — Barra de estado
+   ═══════════════════════════════════════ -->
+   <bottom>
+      <HBox alignment="CENTER_LEFT" spacing="16" styleClass="status-bar">
+         <Label styleClass="status-label"     text="GMAN v1.0" />
+         <Label styleClass="status-separador" text="|" />
+         <Label styleClass="status-label"     text="Sistema de Gestión de Mantenimiento" />
+      </HBox>
+   </bottom>
+
+</BorderPane>

@@ -1,16 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.gman.presentation.controller.EquiposController"
-      spacing="10"
-      padding="10">
+<AnchorPane prefHeight="600" prefWidth="900"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.gman.presentation.controller.EquiposController">
 
-    <!-- Lista -->
-    <fx:include source="com/example/gman/EquiposListView.fxml"/>
+    <VBox AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0"
+          spacing="0">
 
-    <!-- Formulario -->
-    <fx:include source="com/example/gman/EquiposFormView.fxml"/>
+        <!-- ═════════ HEADER (igual a Usuarios) ═════════ -->
+        <HBox styleClass="modulo-header"
+              alignment="CENTER_RIGHT"
+              spacing="16">
 
-</VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="4">
+                <Label text="Gestión de Equipos"
+                       styleClass="modulo-titulo"/>
+
+                <Label fx:id="lblTotalEquipos"
+                       text="Total: 0"
+                       styleClass="modulo-subtitulo"/>
+            </VBox>
+            <Button fx:id="btnAgregar"
+                    styleClass="btn-primario"
+                    text="Agregar">
+                <tooltip>
+                    <Tooltip text="Nuevo Equipo"/>
+                </tooltip>
+            </Button>
+
+        </HBox>
+
+        <!-- ═════════ CUERPO PRINCIPAL ═════════ -->
+        <VBox styleClass="modulo-body"
+              spacing="10"
+              VBox.vgrow="ALWAYS">
+
+            <!-- PANEL LISTA -->
+            <VBox fx:id="panelLista"
+                  spacing="8"
+                  VBox.vgrow="ALWAYS">
+
+                <!-- BUSCADOR + BOTÓN -->
+                <HBox spacing="8" alignment="CENTER_LEFT">
+
+                    <TextField fx:id="busquedaField"
+                               promptText="Buscar equipo..."
+                               styleClass="campo-input"
+                               HBox.hgrow="ALWAYS"
+                               onKeyReleased="#filtrarEquipos"/>
+
+
+
+                </HBox>
+
+                <!-- TABLA -->
+                <TableView fx:id="tableEquipos"
+                           VBox.vgrow="ALWAYS"
+                           styleClass="tabla-datos">
+
+                    <columns>
+                        <TableColumn fx:id="colNumero" text="N°" prefWidth="40"/>
+                        <TableColumn fx:id="colId" prefWidth="25" text="ID"/>
+                        <TableColumn fx:id="colCodigo" prefWidth="60" text="Codigo"/>
+                        <TableColumn fx:id="colNombre" prefWidth="80" text="Nombre"/>
+                        <TableColumn fx:id="colCapacidad" prefWidth="80" text="Capacidad"/>
+                        <TableColumn fx:id="colMarca" prefWidth="80" text="Marca"/>
+                        <TableColumn fx:id="colModelo" prefWidth="80" text="Modelo"/>
+                        <TableColumn fx:id="colSerie" prefWidth="80" text="Serie"/>
+                        <TableColumn fx:id="colArea" prefWidth="80" text="Area"/>
+                        <TableColumn fx:id="colPlanta" prefWidth="80" text="Planta"/>
+                        <TableColumn fx:id="colCentro" prefWidth="80" text="Centro de Costos"/>
+                        <TableColumn fx:id="colCriticidad" prefWidth="80" text="Criticidad"/>
+                        <TableColumn fx:id="colTipo" prefWidth="80" text="Tipo"/>
+                        <TableColumn fx:id="colAcciones" prefWidth="80" text="Acciones"/>
+                    </columns>
+
+                </TableView>
+
+            </VBox>
+
+            <!-- ═════════ FORMULARIO (NO TOCADO) ═════════ -->
+            <VBox fx:id="panelFormulario"
+                  managed="false"
+                  visible="false"
+                  spacing="14">
+
+                <Label fx:id="lblTituloForm"
+                       text="Nuevo Equipo"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;"
+                       styleClass="texto-logo"/>
+
+                <GridPane hgap="10" vgap="10">
+
+                    <TextField fx:id="tfCodigo" promptText="Código *" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="tfNombre" promptText="Nombre *" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="tfCapacidad" promptText="Capacidad" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+                    <TextField fx:id="tfMarca" promptText="Marca" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="tfModelo" promptText="Modelo" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <TextField fx:id="tfSerie" promptText="Serie / Placa" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+                    <ComboBox fx:id="cbArea" promptText="Área" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="cbPlanta" promptText="Planta" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <TextField fx:id="tfCentro" promptText="Centro de Costos" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+
+                    <ComboBox fx:id="cbCriticidad" promptText="Criticidad" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="cbTipo" promptText="Tipo de Equipo" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <HBox spacing="10"
+                          GridPane.columnIndex="0"
+                          GridPane.columnSpan="3"
+                          GridPane.rowIndex="4">
+
+                        <Button fx:id="btnRetroceder" text="⬅"/>
+                        <Button fx:id="btnGuardar"
+                                text="Guardar"
+                                style="-fx-font-weight: bold;"/>
+
+                    </HBox>
+
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <rowConstraints>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="40"/>
+                    </rowConstraints>
+
+                </GridPane>
+            </VBox>
+
+        </VBox>
+
+        <!-- FOOTER simple (no absoluto como antes) -->
+        <Label text="GMAN"
+               style="-fx-font-size: 18px; -fx-font-weight: bold;"
+               AnchorPane.bottomAnchor="7"
+               AnchorPane.leftAnchor="10"/>
+
+    </VBox>
+
+</AnchorPane>

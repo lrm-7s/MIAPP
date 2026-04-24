@@ -1,14 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.gman.presentation.controller.RegistroController">
+
+    <VBox AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0"
+          spacing="0">
+
+        <!-- Encabezado -->
+        <VBox styleClass="registro-header" spacing="4">
+            <Label text="Nuevo Usuario" styleClass="registro-titulo"/>
+            <Label text="Complete los datos para registrar un nuevo usuario"
+                   styleClass="registro-subtitulo"/>
+        </VBox>
+
+        <!-- Formulario -->
+        <VBox styleClass="registro-form" spacing="16" VBox.vgrow="ALWAYS">
+
+            <!-- Username -->
+            <VBox spacing="6">
+                <Label text="Usuario *" styleClass="campo-label"/>
+                <TextField fx:id="usernameField"
+                           promptText="Ej: jperez"
+                           styleClass="campo-input"
+                           maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Nombre -->
+            <VBox spacing="6">
+                <Label text="Nombre completo *" styleClass="campo-label"/>
+                <TextField fx:id="nombreField"
+                           promptText="Ej: Juan Pérez"
+                           styleClass="campo-input"
+                           maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Contraseña -->
+            <VBox spacing="6">
+                <Label text="Contraseña *" styleClass="campo-label"/>
+                <PasswordField fx:id="passwordField"
+                               promptText="Mínimo 4 caracteres"
+                               styleClass="campo-input"
+                               maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Confirmar Contraseña -->
+            <VBox spacing="6">
+                <Label text="Confirmar contraseña *" styleClass="campo-label"/>
+                <PasswordField fx:id="confirmarPasswordField"
+                               promptText="Repita la contraseña"
+                               styleClass="campo-input"
+                               maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Rol -->
+            <VBox spacing="6">
+                <Label text="Rol *" styleClass="campo-label"/>
+                <ComboBox fx:id="rolComboBox"
+                          maxWidth="Infinity"
+                          styleClass="campo-input"/>
+            </VBox>
+
+            <!-- Mensaje error/éxito -->
+            <Label fx:id="mensajeLabel"
+                   styleClass="mensaje-label"
+                   wrapText="true"
+                   visible="false"
+                   maxWidth="Infinity"/>
+
+            <!-- Botones -->
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button text="Cancelar"
+                        styleClass="btn-secundario"
+                        onAction="#cancelar"/>
+                <Button text="Registrar Usuario"
+                        styleClass="btn-primario"
+                        onAction="#registrar"/>
+            </HBox>
+        </VBox>
+
+    </VBox>
 
 </AnchorPane>

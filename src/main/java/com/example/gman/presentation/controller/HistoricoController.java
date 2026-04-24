@@ -1,2 +1,4 @@
-package com.example.gman.presentation.controller;public class HistoricoController {
+package com.example.gman.presentation.controller;
+
+public class HistoricoController {
 }
