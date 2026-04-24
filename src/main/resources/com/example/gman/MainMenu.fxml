@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gman.presentation.controller.MenuPrincipalController"
+          hgap="20" vgap="20" padding="20">
+
+   <!-- Fila 0 -->
+   <Button text="Equipos" GridPane.rowIndex="0" GridPane.columnIndex="0" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/imagenes/uno.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Mano de Obra" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/manoobra.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Localizaciones" GridPane.rowIndex="0" GridPane.columnIndex="2" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/localizaciones.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Órdenes de Trabajo" GridPane.rowIndex="0" GridPane.columnIndex="3" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/ordenestrabajo.png"/>
+      </graphic>
+   </Button>
+
+   <!-- Fila 1 -->
+   <Button text="Reportes" GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/reportes.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Catálogos" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/catalogos.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Plan de Mantenimiento" GridPane.rowIndex="1" GridPane.columnIndex="2" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/planmantenimiento.png"/>
+      </graphic>
+   </Button>
+
+   <Button text="Histórico" GridPane.rowIndex="1" GridPane.columnIndex="3" prefWidth="150" prefHeight="100">
+      <graphic>
+         <ImageView fitWidth="50" fitHeight="50" pickOnBounds="true" preserveRatio="true"
+                    image="@/images/historico.png"/>
+      </graphic>
+   </Button>
+
+</GridPane>
