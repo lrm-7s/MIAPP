@@ -3,82 +3,118 @@ package com.example.gman.domain.model;
 import javafx.beans.property.*;
 
 /**
- * Modelo de dominio para un Empleado.
- * Usa JavaFX Properties para enlace directo con TableView/TextField.
+ * Modelo de dominio para la tabla empleados.
+ * Usa JavaFX Properties para binding directo con TableView.
+ *
+ * CAMBIOS respecto a la versión anterior:
+ *  - posicion     (String) → posicionId (int) FK a catalogo
+ *  - departamento (String) → departamentoId (int) FK a catalogo
+ *  - Se agregan posicionNombre / departamentoNombre para mostrar en tabla (JOIN)
+ *  - Se agrega localizacionId FK a localizaciones
  */
 public class Empleado {
 
-    private final IntegerProperty  numeroEmpleado  = new SimpleIntegerProperty();
-    private final StringProperty   nombre          = new SimpleStringProperty();
-    private final StringProperty   direccion       = new SimpleStringProperty();
-    private final StringProperty   posicion        = new SimpleStringProperty();
-    private final StringProperty   celular         = new SimpleStringProperty();
-    private final StringProperty   departamento    = new SimpleStringProperty();
-    private final StringProperty   correo          = new SimpleStringProperty();
-    private final DoubleProperty   salarioPorHora  = new SimpleDoubleProperty();
-    private final DoubleProperty   tiempoExtra1    = new SimpleDoubleProperty();
-    private final DoubleProperty   tiempoExtra2    = new SimpleDoubleProperty();
-    private final DoubleProperty   tiempoExtra3    = new SimpleDoubleProperty();
+    // ── Identificador ────────────────────────────────────────────────
+    private final IntegerProperty numeroEmpleado = new SimpleIntegerProperty();
 
-    public Empleado() {}
+    // ── Datos personales ─────────────────────────────────────────────
+    private final StringProperty nombre    = new SimpleStringProperty();
+    private final StringProperty direccion = new SimpleStringProperty();
+    private final StringProperty celular   = new SimpleStringProperty();
+    private final StringProperty correo    = new SimpleStringProperty();
 
-    // ─── Número de Empleado ──────────────────────────────────────────
-    public int getNumeroEmpleado()                  { return numeroEmpleado.get(); }
-    public void setNumeroEmpleado(int v)            { numeroEmpleado.set(v); }
+    // ── FK → catalogo (posicion) ─────────────────────────────────────
+    private int    posicionId;
+    private String posicionNombre;   // campo de lectura (JOIN), no se persiste
+
+    // ── FK → catalogo (departamento) ────────────────────────────────
+    private int    departamentoId;
+    private String departamentoNombre; // campo de lectura (JOIN)
+
+    // ── FK → localizaciones ──────────────────────────────────────────
+    private int    localizacionId;
+    private String localizacionDesc;   // campo de lectura (JOIN)
+
+    // ── Datos económicos ─────────────────────────────────────────────
+    private final DoubleProperty salarioPorHora = new SimpleDoubleProperty();
+    private final DoubleProperty tiempoExtra1   = new SimpleDoubleProperty();
+    private final DoubleProperty tiempoExtra2   = new SimpleDoubleProperty();
+    private final DoubleProperty tiempoExtra3   = new SimpleDoubleProperty();
+
+    // ════════════════════════════════════════════════════════════════
+    //  PROPERTIES (para TableView binding)
+    // ════════════════════════════════════════════════════════════════
+
     public IntegerProperty numeroEmpleadoProperty() { return numeroEmpleado; }
+    public StringProperty  nombreProperty()          { return nombre; }
+    public StringProperty  direccionProperty()       { return direccion; }
+    public StringProperty  celularProperty()         { return celular; }
+    public StringProperty  correoProperty()          { return correo; }
+    public DoubleProperty  salarioPorHoraProperty()  { return salarioPorHora; }
+    public DoubleProperty  tiempoExtra1Property()    { return tiempoExtra1; }
+    public DoubleProperty  tiempoExtra2Property()    { return tiempoExtra2; }
+    public DoubleProperty  tiempoExtra3Property()    { return tiempoExtra3; }
 
-    // ─── Nombre ──────────────────────────────────────────────────────
-    public String getNombre()                { return nombre.get(); }
-    public void setNombre(String v)          { nombre.set(v); }
-    public StringProperty nombreProperty()   { return nombre; }
+    // Properties de solo lectura para la tabla (nombres del JOIN)
+    public StringProperty posicionNombreProperty() {
+        return new SimpleStringProperty(posicionNombre != null ? posicionNombre : "—");
+    }
+    public StringProperty departamentoNombreProperty() {
+        return new SimpleStringProperty(departamentoNombre != null ? departamentoNombre : "—");
+    }
 
-    // ─── Dirección ───────────────────────────────────────────────────
-    public String getDireccion()             { return direccion.get(); }
-    public void setDireccion(String v)       { direccion.set(v); }
-    public StringProperty direccionProperty(){ return direccion; }
+    // ════════════════════════════════════════════════════════════════
+    //  GETTERS & SETTERS
+    // ════════════════════════════════════════════════════════════════
 
-    // ─── Posición ────────────────────────────────────────────────────
-    public String getPosicion()              { return posicion.get(); }
-    public void setPosicion(String v)        { posicion.set(v); }
-    public StringProperty posicionProperty() { return posicion; }
+    public int    getNumeroEmpleado()              { return numeroEmpleado.get(); }
+    public void   setNumeroEmpleado(int v)         { numeroEmpleado.set(v); }
 
-    // ─── Celular ─────────────────────────────────────────────────────
-    public String getCelular()               { return celular.get(); }
-    public void setCelular(String v)         { celular.set(v); }
-    public StringProperty celularProperty()  { return celular; }
+    public String getNombre()                      { return nombre.get(); }
+    public void   setNombre(String v)              { nombre.set(v); }
 
-    // ─── Departamento ────────────────────────────────────────────────
-    public String getDepartamento()                { return departamento.get(); }
-    public void setDepartamento(String v)          { departamento.set(v); }
-    public StringProperty departamentoProperty()   { return departamento; }
+    public String getDireccion()                   { return direccion.get(); }
+    public void   setDireccion(String v)           { direccion.set(v); }
 
-    // ─── Correo electrónico ──────────────────────────────────────────
-    public String getCorreo()                { return correo.get(); }
-    public void setCorreo(String v)          { correo.set(v); }
-    public StringProperty correoProperty()   { return correo; }
+    public String getCelular()                     { return celular.get(); }
+    public void   setCelular(String v)             { celular.set(v); }
 
-    // ─── Salario por hora ────────────────────────────────────────────
-    public double getSalarioPorHora()                  { return salarioPorHora.get(); }
-    public void setSalarioPorHora(double v)            { salarioPorHora.set(v); }
-    public DoubleProperty salarioPorHoraProperty()     { return salarioPorHora; }
+    public String getCorreo()                      { return correo.get(); }
+    public void   setCorreo(String v)              { correo.set(v); }
 
-    // ─── Tiempo Extra 1 (tarifa/factor) ─────────────────────────────
+    // Posición
+    public int    getPosicionId()                  { return posicionId; }
+    public void   setPosicionId(int v)             { posicionId = v; }
+    public String getPosicionNombre()              { return posicionNombre; }
+    public void   setPosicionNombre(String v)      { posicionNombre = v; }
+
+    // Departamento
+    public int    getDepartamentoId()              { return departamentoId; }
+    public void   setDepartamentoId(int v)         { departamentoId = v; }
+    public String getDepartamentoNombre()          { return departamentoNombre; }
+    public void   setDepartamentoNombre(String v)  { departamentoNombre = v; }
+
+    // Localización
+    public int    getLocalizacionId()              { return localizacionId; }
+    public void   setLocalizacionId(int v)         { localizacionId = v; }
+    public String getLocalizacionDesc()            { return localizacionDesc; }
+    public void   setLocalizacionDesc(String v)    { localizacionDesc = v; }
+
+    // Económicos
+    public double getSalarioPorHora()              { return salarioPorHora.get(); }
+    public void   setSalarioPorHora(double v)      { salarioPorHora.set(v); }
+
     public double getTiempoExtra1()                { return tiempoExtra1.get(); }
-    public void setTiempoExtra1(double v)          { tiempoExtra1.set(v); }
-    public DoubleProperty tiempoExtra1Property()   { return tiempoExtra1; }
+    public void   setTiempoExtra1(double v)        { tiempoExtra1.set(v); }
 
-    // ─── Tiempo Extra 2 ──────────────────────────────────────────────
     public double getTiempoExtra2()                { return tiempoExtra2.get(); }
-    public void setTiempoExtra2(double v)          { tiempoExtra2.set(v); }
-    public DoubleProperty tiempoExtra2Property()   { return tiempoExtra2; }
+    public void   setTiempoExtra2(double v)        { tiempoExtra2.set(v); }
 
-    // ─── Tiempo Extra 3 ──────────────────────────────────────────────
     public double getTiempoExtra3()                { return tiempoExtra3.get(); }
-    public void setTiempoExtra3(double v)          { tiempoExtra3.set(v); }
-    public DoubleProperty tiempoExtra3Property()   { return tiempoExtra3; }
+    public void   setTiempoExtra3(double v)        { tiempoExtra3.set(v); }
 
     @Override
     public String toString() {
-        return nombre.get() + " (#" + numeroEmpleado.get() + ")";
+        return getNumeroEmpleado() + " — " + getNombre();
     }
 }

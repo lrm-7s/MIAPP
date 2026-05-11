@@ -2,62 +2,155 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="600" prefWidth="900"
-            xmlns="http://javafx.com/javafx/16"
+<AnchorPane xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-          >
+            fx:controller="com.example.gman.presentation.controller.InventarioController"
+            styleClass="content-area">
 
-    <VBox AnchorPane.topAnchor="0"
-          AnchorPane.bottomAnchor="0"
-          AnchorPane.leftAnchor="0"
-          AnchorPane.rightAnchor="0"
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
           spacing="0">
 
-        <!-- ═════════ HEADER (igual a Usuarios) ═════════ -->
-        <HBox styleClass="modulo-header"
-              alignment="CENTER_LEFT"
-              spacing="16">
-
-            <VBox spacing="4" HBox.hgrow="ALWAYS">
-
-                <Label text="Gestión de Historico"
-                       styleClass="modulo-titulo"/>
-
-                <Label text="Administre Historico"
-                       styleClass="modulo-subtitulo"/>
-
+        <!-- ── HEADER ─────────────────────────────────────────────── -->
+        <HBox styleClass="module-header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+            <Label text="📦" styleClass="module-icon"/>
+            <VBox spacing="2">
+                <Label text="Inventario" styleClass="module-title"/>
+                <Label text="Gestión de materiales y repuestos"
+                       styleClass="module-subtitle"/>
             </VBox>
-
         </HBox>
-        <GridPane hgap="10" vgap="10" >
 
-            <!-- Código -->
-            <Label text="Código:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtCodigo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <Separator/>
 
-            <!-- Descripción -->
-            <Label text="Descripción:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtDescripcion" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <!-- ── BARRA DE HERRAMIENTAS ──────────────────────────────── -->
+        <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="10">
+            <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+            <Button fx:id="btnNuevo" text="+ Nuevo Ítem" styleClass="btn-primary"
+                    onAction="#abrirNuevo"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="busquedaField" promptText="Buscar por código o descripción..."
+                       prefWidth="280" styleClass="search-field"
+                       onKeyReleased="#filtrar"/>
+            <Button text="✕" styleClass="btn-secondary" onAction="#limpiarBusqueda"/>
+        </HBox>
 
-            <!-- Cantidad -->
-            <Label text="Cantidad:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtCantidad" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Separator/>
 
-            <!-- Precio Unitario -->
-            <Label text="Precio Unitario:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtPrecioUnitario" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <!-- ── MENSAJE DE ESTADO ──────────────────────────────────── -->
+        <Label fx:id="mensajeLabel" text="" visible="false"
+               wrapText="true" styleClass="mensaje-error">
+            <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
+        </Label>
 
-            <!-- Botón (opcional) -->
-            <Button text="Guardar" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        <!-- ── TABLA PRINCIPAL ───────────────────────────────────── -->
+        <StackPane VBox.vgrow="ALWAYS">
 
-        </GridPane>
+            <TableView fx:id="tablaInventario" styleClass="tabla-gman">
+                <placeholder><Label text="Sin registros de inventario"/></placeholder>
+                <columns>
+                    <TableColumn fx:id="colCodigo"      text="Código"       prefWidth="120"/>
+                    <TableColumn fx:id="colDescripcion" text="Descripción"  prefWidth="240"/>
+                    <TableColumn fx:id="colCantidad"    text="Cantidad"     prefWidth="90"/>
+                    <TableColumn fx:id="colPrecio"      text="Precio Unit." prefWidth="110"/>
+                    <TableColumn fx:id="colProveedor"   text="Proveedor"    prefWidth="160"/>
+                    <TableColumn fx:id="colAcciones"    text="Acciones"     prefWidth="200"/>
+                </columns>
+            </TableView>
+
+            <!-- ── OVERLAY FORMULARIO ─────────────────────────────── -->
+            <StackPane fx:id="overlayPane" visible="false" managed="false"
+                       styleClass="overlay-backdrop">
+
+                <VBox styleClass="form-card" maxWidth="420" spacing="16">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <Label fx:id="dialogoTitulo" text="Nuevo Ítem" styleClass="form-title"/>
+                    <Separator/>
+
+                    <GridPane hgap="12" vgap="14">
+                        <padding><Insets top="8"/></padding>
+
+                        <Label text="Código *" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                               styleClass="form-label"/>
+                        <TextField fx:id="fCodigo" promptText="Ej. INV-001"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   prefWidth="220" styleClass="form-field"/>
+
+                        <Label text="Descripción *" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                               styleClass="form-label"/>
+                        <TextField fx:id="fDescripcion" promptText="Descripción del ítem"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1"
+                                   prefWidth="220" styleClass="form-field"/>
+
+                        <Label text="Cantidad" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                               styleClass="form-label"/>
+                        <TextField fx:id="fCantidad" promptText="0"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2"
+                                   prefWidth="220" styleClass="form-field"/>
+
+                        <Label text="Precio Unit." GridPane.columnIndex="0" GridPane.rowIndex="3"
+                               styleClass="form-label"/>
+                        <TextField fx:id="fPrecio" promptText="0.00"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="3"
+                                   prefWidth="220" styleClass="form-field"/>
+                    </GridPane>
+
+                    <Label fx:id="lblError" text="" styleClass="form-error" wrapText="true"/>
+
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Button text="Cancelar" styleClass="btn-secondary" onAction="#cerrarDialogo"/>
+                        <Button text="Guardar"  styleClass="btn-primary"   onAction="#guardar"/>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+            <!-- ── OVERLAY CONFIRMAR ELIMINACIÓN ─────────────────── -->
+            <StackPane fx:id="overlayConfirmar" visible="false" managed="false"
+                       styleClass="overlay-backdrop">
+
+                <VBox styleClass="form-card" maxWidth="360" spacing="16" alignment="CENTER">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+                    <Label text="⚠ Eliminar ítem" styleClass="form-title"/>
+                    <Label fx:id="lblConfirmarMsg"
+                           text="¿Seguro que desea eliminar este ítem?"
+                           styleClass="form-label" wrapText="true" textAlignment="CENTER"/>
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button text="Cancelar" styleClass="btn-secondary" onAction="#cerrarConfirmar"/>
+                        <Button text="Eliminar" styleClass="btn-danger"    onAction="#confirmarEliminar"/>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+            <!-- ── OVERLAY CONSUMO POR OT ────────────────────────── -->
+            <StackPane fx:id="overlayConsumo" visible="false" managed="false"
+                       styleClass="overlay-backdrop">
+
+                <VBox styleClass="form-card" maxWidth="600" spacing="16">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <Label fx:id="lblConsumoTitulo" text="Consumo en OTs"
+                           styleClass="form-title"/>
+                    <Separator/>
+
+                    <TableView fx:id="tablaConsumo" prefHeight="300">
+                        <placeholder><Label text="Sin consumo registrado en OTs"/></placeholder>
+                        <columns>
+                            <TableColumn fx:id="colOT"         text="N° OT"       prefWidth="130"/>
+                            <TableColumn fx:id="colItemConsumo" text="Ítem"       prefWidth="220"/>
+                            <TableColumn fx:id="colCantUsada"  text="Cant. Usada" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button text="Cerrar" styleClass="btn-secondary" onAction="#cerrarConsumo"/>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+        </StackPane>
     </VBox>
-
-
-    <!-- FOOTER (simplificado como en otros módulos) -->
-    <Label text="GMAN"
-           style="-fx-font-size: 18px; -fx-font-weight: bold;"
-           AnchorPane.bottomAnchor="10"
-           AnchorPane.rightAnchor="10"/>
 </AnchorPane>

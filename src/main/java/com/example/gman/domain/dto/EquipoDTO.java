@@ -2,23 +2,33 @@ package com.example.gman.domain.dto;
 
 import com.example.gman.domain.model.Equipo;
 
-
+/**
+ * DTO para transferencia de datos de Equipo hacia/desde la API remota.
+ *
+ * Cambios respecto a la versión anterior:
+ *  - area       (String) → areaId       (int)
+ *  - planta     (String) → localizacionId (int)
+ *  - criticidad (String) → criticidadId (int)
+ *  - tipo       (String) → tipoId       (int)
+ */
 public class EquipoDTO {
-    public int id;
+
+    public int    id;
     public String codigo;
     public String nombre;
     public String capacidad;
     public String marca;
     public String modelo;
     public String serie;
-    public String area;
-    public String planta;
+    public int    areaId;          // FK → catalogo (AREA)
+    public int    localizacionId;  // FK → localizaciones  (antes: planta)
     public String centroCostos;
-    public String criticidad;
-    public String tipo;
+    public int    criticidadId;    // FK → catalogo (CRITICIDAD)
+    public int    tipoId;          // FK → catalogo (TIPO_EQUIPO)
 
+    // ── Model → DTO ───────────────────────────────────────────────────────
     public static EquipoDTO fromModel(Equipo e) {
-        EquipoDTO dto = new EquipoDTO();
+        EquipoDTO dto    = new EquipoDTO();
         dto.id           = e.getId();
         dto.codigo       = e.getCodigo();
         dto.nombre       = e.getNombre();
@@ -26,14 +36,15 @@ public class EquipoDTO {
         dto.marca        = e.getMarca();
         dto.modelo       = e.getModelo();
         dto.serie        = e.getSerie();
-        dto.area         = e.getArea();
-        dto.planta       = e.getPlanta();
+        dto.areaId       = e.getAreaId();
+        dto.localizacionId = e.getLocalizacionId();
         dto.centroCostos = e.getCentroCostos();
-        dto.criticidad   = e.getCriticidad();
-        dto.tipo         = e.getTipo();
+        dto.criticidadId = e.getCriticidadId();
+        dto.tipoId       = e.getTipoId();
         return dto;
     }
 
+    // ── DTO → Model ───────────────────────────────────────────────────────
     public Equipo toModel() {
         Equipo e = new Equipo();
         e.setId(id);
@@ -43,14 +54,11 @@ public class EquipoDTO {
         e.setMarca(marca);
         e.setModelo(modelo);
         e.setSerie(serie);
-        e.setArea(area);
-        e.setPlanta(planta);
+        e.setAreaId(areaId);
+        e.setLocalizacionId(localizacionId);
         e.setCentroCostos(centroCostos);
-        e.setCriticidad(criticidad);
-        e.setTipo(tipo);
+        e.setCriticidadId(criticidadId);
+        e.setTipoId(tipoId);
         return e;
     }
-
-
-
 }

@@ -10,74 +10,124 @@ import java.util.List;
 
 public class OrdenTrabajoRepositoryImpl implements OrdenTrabajoRepository {
 
-    // ─── Obtener todas ───────────────────────────────────────────────
+    // NOTA: DatabaseHelper usa métodos estáticos — no se inyecta por constructor.
+    // Se mantiene coherente con CatalogoRepositoryImpl y LocalizacionRepositoryImpl.
+
+    // ── SQL base con JOINs ───────────────────────────────────────────────
+    // CORRECCIÓN: recibido_por_id ahora JOIN a empleados (no usuarios)
+    //             aceptada_por_id también JOIN a empleados
+    private static final String SQL_SELECT = """
+            SELECT
+                ot.id, ot.numero_ot, ot.fecha_solicitud, ot.fecha_requerida,
+                ot.descripcion, ot.notas_tecnico, ot.oficio, ot.fecha_vencimiento,
+                ot.estado_id, ot.tipo_ot_id, ot.prioridad_id,
+                ot.estado_equipo_id, ot.codigo_falla_id,
+                ot.equipo_id, ot.localizacion_id,
+                ot.recibido_por_id, ot.creado_por_id, ot.aceptada_por_id,
+                ot.instruccion_id,
+                ot.desc_causa, ot.accion_realizada, ot.prevencion,
+                ot.duracion_dias,
+                ot.fecha_respuesta, ot.fecha_inicio, ot.fecha_termino, ot.fecha_entrega,
+                ot.respuesta_est, ot.respuesta_real,
+                ot.inicio_est, ot.inicio_real,
+                ot.termino_est, ot.termino_real,
+                ce.nombre     AS estado_nombre,
+                ct.nombre     AS tipo_ot_nombre,
+                cp.nombre     AS prioridad_nombre,
+                cse.nombre    AS estado_equipo_nombre,
+                cf.nombre     AS codigo_falla_nombre,
+                l.descripcion AS localizacion_nombre,
+                eq.nombre     AS equipo_nombre,
+                uc.nombre     AS creado_por_nombre,
+                er.nombre     AS recibido_por_nombre
+            FROM orden_trabajo ot
+            LEFT JOIN catalogo      ce  ON ot.estado_id        = ce.id
+            LEFT JOIN catalogo      ct  ON ot.tipo_ot_id       = ct.id
+            LEFT JOIN catalogo      cp  ON ot.prioridad_id     = cp.id
+            LEFT JOIN catalogo      cse ON ot.estado_equipo_id = cse.id
+            LEFT JOIN catalogo      cf  ON ot.codigo_falla_id  = cf.id
+            LEFT JOIN localizaciones l  ON ot.localizacion_id  = l.id
+            LEFT JOIN equipos        eq ON ot.equipo_id        = eq.id
+            LEFT JOIN usuarios       uc ON ot.creado_por_id    = uc.id
+            LEFT JOIN empleados      er ON ot.recibido_por_id  = er.numero_empleado
+            """;
+
+    // ════════════════════════════════════════════════════════════════
+    //  CONSULTAS
+    // ════════════════════════════════════════════════════════════════
+
     @Override
     public List<OrdenTrabajo> getAll() throws SQLException {
         List<OrdenTrabajo> lista = new ArrayList<>();
-        String sql = "SELECT * FROM orden_trabajo ORDER BY id DESC";
+        String sql = SQL_SELECT + " ORDER BY ot.id DESC";
         try (Connection conn = DatabaseHelper.getConnection();
              Statement stmt  = conn.createStatement();
              ResultSet rs    = stmt.executeQuery(sql)) {
-            while (rs.next()) lista.add(mapear(rs));
+            while (rs.next()) lista.add(mapRow(rs));
         }
         return lista;
     }
 
-    // ─── Obtener por estado ──────────────────────────────────────────
     @Override
-    public List<OrdenTrabajo> getByEstado(String estado) throws SQLException {
+    public List<OrdenTrabajo> getByEstado(int estadoId) throws SQLException {
         List<OrdenTrabajo> lista = new ArrayList<>();
-        String sql = "SELECT * FROM orden_trabajo WHERE estado = ? ORDER BY id DESC";
+        String sql = SQL_SELECT + " WHERE ot.estado_id = ? ORDER BY ot.id DESC";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, estado);
+            ps.setInt(1, estadoId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) lista.add(mapear(rs));
+                while (rs.next()) lista.add(mapRow(rs));
             }
         }
         return lista;
     }
 
-    // ─── Obtener por ID ──────────────────────────────────────────────
     @Override
     public OrdenTrabajo getById(int id) throws SQLException {
-        String sql = "SELECT * FROM orden_trabajo WHERE id = ?";
+        String sql = SQL_SELECT + " WHERE ot.id = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapear(rs);
+                if (rs.next()) return mapRow(rs);
             }
         }
         return null;
     }
 
-    // ─── Crear ───────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  CREAR
+    // ════════════════════════════════════════════════════════════════
+
     @Override
     public void crear(OrdenTrabajo ot) throws SQLException {
         String sql = """
-            INSERT INTO orden_trabajo
-            (numero_ot, fecha_solicitud, estado, tipo_ot, prioridad,
-             fecha_requerida, descripcion, equipo_id, localizacion,
-             estado_equipo, recibido_por, notas_tecnico, creado_por)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """;
+                INSERT INTO orden_trabajo
+                  (numero_ot, fecha_solicitud, estado_id, tipo_ot_id, prioridad_id,
+                   fecha_requerida, descripcion, equipo_id, localizacion_id,
+                   estado_equipo_id, recibido_por_id, notas_tecnico, creado_por_id,
+                   oficio, fecha_vencimiento, instruccion_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """;
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql,
-                     Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setString(1,  ot.getNumeroOt());
             ps.setString(2,  ot.getFechaSolicitud());
-            ps.setString(3,  ot.getEstado());
-            ps.setString(4,  ot.getTipoOt());
-            ps.setString(5,  ot.getPrioridad());
+            setIntOrNull(ps, 3,  ot.getEstadoId());
+            setIntOrNull(ps, 4,  ot.getTipoOtId());
+            setIntOrNull(ps, 5,  ot.getPrioridadId());
             ps.setString(6,  ot.getFechaRequerida());
             ps.setString(7,  ot.getDescripcion());
-            ps.setInt(8,     ot.getEquipoId());
-            ps.setString(9,  ot.getLocalizacion());
-            ps.setString(10, ot.getEstadoEquipo());
-            ps.setString(11, ot.getRecibidoPor());
+            setIntOrNull(ps, 8,  ot.getEquipoId());
+            setIntOrNull(ps, 9,  ot.getLocalizacionId());
+            setIntOrNull(ps, 10, ot.getEstadoEquipoId());
+            setIntOrNull(ps, 11, ot.getRecibidoPorId());
             ps.setString(12, ot.getNotasTecnico());
-            ps.setString(13, ot.getCreadoPor());
+            setIntOrNull(ps, 13, ot.getCreadoPorId());
+            ps.setString(14, ot.getOficio());
+            ps.setString(15, ot.getFechaVencimiento());
+            setIntOrNull(ps, 16, ot.getInstruccionId());
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -86,95 +136,111 @@ public class OrdenTrabajoRepositoryImpl implements OrdenTrabajoRepository {
         }
     }
 
-    // ─── Actualizar ──────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  ACTUALIZAR
+    // ════════════════════════════════════════════════════════════════
+
     @Override
     public void actualizar(OrdenTrabajo ot) throws SQLException {
         String sql = """
-            UPDATE orden_trabajo SET
-                estado = ?, tipo_ot = ?, prioridad = ?,
-                fecha_requerida = ?, descripcion = ?,
-                equipo_id = ?, localizacion = ?,
-                estado_equipo = ?, recibido_por = ?, notas_tecnico = ?
-            WHERE id = ?
-            """;
+                UPDATE orden_trabajo SET
+                  estado_id=?, tipo_ot_id=?, prioridad_id=?,
+                  fecha_requerida=?, descripcion=?,
+                  equipo_id=?, localizacion_id=?,
+                  estado_equipo_id=?, recibido_por_id=?,
+                  notas_tecnico=?, oficio=?, fecha_vencimiento=?
+                WHERE id=?
+                """;
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1,  ot.getEstado());
-            ps.setString(2,  ot.getTipoOt());
-            ps.setString(3,  ot.getPrioridad());
+            setIntOrNull(ps, 1,  ot.getEstadoId());
+            setIntOrNull(ps, 2,  ot.getTipoOtId());
+            setIntOrNull(ps, 3,  ot.getPrioridadId());
             ps.setString(4,  ot.getFechaRequerida());
             ps.setString(5,  ot.getDescripcion());
-            ps.setInt(6,     ot.getEquipoId());
-            ps.setString(7,  ot.getLocalizacion());
-            ps.setString(8,  ot.getEstadoEquipo());
-            ps.setString(9,  ot.getRecibidoPor());
+            setIntOrNull(ps, 6,  ot.getEquipoId());
+            setIntOrNull(ps, 7,  ot.getLocalizacionId());
+            setIntOrNull(ps, 8,  ot.getEstadoEquipoId());
+            setIntOrNull(ps, 9,  ot.getRecibidoPorId());
             ps.setString(10, ot.getNotasTecnico());
-            ps.setInt(11,    ot.getId());
+            ps.setString(11, ot.getOficio());
+            ps.setString(12, ot.getFechaVencimiento());
+            ps.setInt(13,    ot.getId());
             ps.executeUpdate();
         }
     }
 
-    // ─── Cerrar OT (guarda datos de cierre) ──────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  CERRAR
+    // ════════════════════════════════════════════════════════════════
+
     @Override
     public void cerrar(OrdenTrabajo ot) throws SQLException {
         String sql = """
-            UPDATE orden_trabajo SET
-                estado = 'CERRADA',
-                fecha_respuesta = ?, fecha_inicio = ?, fecha_termino = ?,
-                fecha_entrega = ?, codigo_falla = ?, desc_causa = ?,
-                accion_realizada = ?, prevencion = ?,
-                duracion_dias = ?, aceptada_por = ?
-            WHERE id = ?
-            """;
+                UPDATE orden_trabajo SET
+                  estado_id=?,
+                  fecha_respuesta=?, fecha_inicio=?, fecha_termino=?, fecha_entrega=?,
+                  respuesta_est=?, respuesta_real=?,
+                  inicio_est=?, inicio_real=?,
+                  termino_est=?, termino_real=?,
+                  codigo_falla_id=?, desc_causa=?,
+                  accion_realizada=?, prevencion=?,
+                  duracion_dias=?, aceptada_por_id=?
+                WHERE id=?
+                """;
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1,  ot.getFechaRespuesta());
-            ps.setString(2,  ot.getFechaInicio());
-            ps.setString(3,  ot.getFechaTermino());
-            ps.setString(4,  ot.getFechaEntrega());
-            ps.setString(5,  ot.getCodigoFalla());
-            ps.setString(6,  ot.getDescCausa());
-            ps.setString(7,  ot.getAccionRealizada());
-            ps.setString(8,  ot.getPrevencion());
-            ps.setInt(9,     ot.getDuracionDias());
-            ps.setString(10, ot.getAceptadaPor());
-            ps.setInt(11,    ot.getId());
+            setIntOrNull(ps, 1,  ot.getEstadoId());
+            ps.setString(2,  ot.getFechaRespuesta());
+            ps.setString(3,  ot.getFechaInicio());
+            ps.setString(4,  ot.getFechaTermino());
+            ps.setString(5,  ot.getFechaEntrega());
+            ps.setString(6,  ot.getRespuestaEst());
+            ps.setString(7,  ot.getRespuestaReal());
+            ps.setString(8,  ot.getInicioEst());
+            ps.setString(9,  ot.getInicioReal());
+            ps.setString(10, ot.getTerminoEst());
+            ps.setString(11, ot.getTerminoReal());
+            setIntOrNull(ps, 12, ot.getCodigoFallaId());
+            ps.setString(13, ot.getDescCausa());
+            ps.setString(14, ot.getAccionRealizada());
+            ps.setString(15, ot.getPrevencion());
+            ps.setInt(16,    ot.getDuracionDias());
+            setIntOrNull(ps, 17, ot.getAceptadaPorId());
+            ps.setInt(18,    ot.getId());
             ps.executeUpdate();
         }
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  ELIMINAR
+    // ════════════════════════════════════════════════════════════════
+
     @Override
     public void eliminar(int id) throws SQLException {
-        // Primero elimina relaciones
-        try (Connection conn = DatabaseHelper.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "DELETE FROM ot_empleados WHERE ot_id = ?")) {
-                ps.setInt(1, id);
-                ps.executeUpdate();
-            }
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "DELETE FROM orden_trabajo WHERE id = ?")) {
-                ps.setInt(1, id);
-                ps.executeUpdate();
-            }
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "DELETE FROM orden_trabajo WHERE id = ?")) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
         }
     }
 
-    // ─── Asignar empleados ───────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  EMPLEADOS ASIGNADOS
+    // ════════════════════════════════════════════════════════════════
+
     @Override
-    public void asignarEmpleados(int otId,
-                                 List<Integer> numerosEmpleado) throws SQLException {
+    public void asignarEmpleados(int otId, List<Integer> numerosEmpleado) throws SQLException {
         try (Connection conn = DatabaseHelper.getConnection()) {
-            // Limpia asignaciones anteriores
             try (PreparedStatement ps = conn.prepareStatement(
                     "DELETE FROM ot_empleados WHERE ot_id = ?")) {
                 ps.setInt(1, otId);
                 ps.executeUpdate();
             }
-            // Inserta nuevas
-            String ins = "INSERT OR IGNORE INTO ot_empleados (ot_id, empleado_numero) VALUES (?,?)";
-            try (PreparedStatement ps = conn.prepareStatement(ins)) {
+            if (numerosEmpleado == null || numerosEmpleado.isEmpty()) return;
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT OR IGNORE INTO ot_empleados (ot_id, empleado_numero) VALUES (?,?)")) {
                 for (int num : numerosEmpleado) {
                     ps.setInt(1, otId);
                     ps.setInt(2, num);
@@ -185,13 +251,12 @@ public class OrdenTrabajoRepositoryImpl implements OrdenTrabajoRepository {
         }
     }
 
-    // ─── Obtener empleados de una OT ─────────────────────────────────
     @Override
     public List<Integer> getEmpleadosDeOt(int otId) throws SQLException {
         List<Integer> lista = new ArrayList<>();
-        String sql = "SELECT empleado_numero FROM ot_empleados WHERE ot_id = ?";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT empleado_numero FROM ot_empleados WHERE ot_id = ?")) {
             ps.setInt(1, otId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(rs.getInt("empleado_numero"));
@@ -200,33 +265,81 @@ public class OrdenTrabajoRepositoryImpl implements OrdenTrabajoRepository {
         return lista;
     }
 
-    // ─── Mapeo ResultSet → OrdenTrabajo ──────────────────────────────
-    private OrdenTrabajo mapear(ResultSet rs) throws SQLException {
+    // ════════════════════════════════════════════════════════════════
+    //  RESOLVER USUARIO ID POR USERNAME
+    //  Necesario porque Usuario.java usa username como PK (no tiene int id)
+    // ════════════════════════════════════════════════════════════════
+
+    @Override
+    public int resolverUsuarioId(String username) throws SQLException {
+        if (username == null || username.isBlank()) return 0;
+        String sql = "SELECT id FROM usuarios WHERE username = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("id");
+            }
+        }
+        return 0;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  HELPERS
+    // ════════════════════════════════════════════════════════════════
+
+    private void setIntOrNull(PreparedStatement ps, int idx, int value) throws SQLException {
+        if (value == 0) ps.setNull(idx, Types.INTEGER);
+        else            ps.setInt(idx, value);
+    }
+
+    private OrdenTrabajo mapRow(ResultSet rs) throws SQLException {
         OrdenTrabajo ot = new OrdenTrabajo();
-        ot.setId(             rs.getInt("id"));
-        ot.setNumeroOt(       rs.getString("numero_ot"));
-        ot.setFechaSolicitud( rs.getString("fecha_solicitud"));
-        ot.setEstado(         rs.getString("estado"));
-        ot.setTipoOt(         rs.getString("tipo_ot"));
-        ot.setPrioridad(      rs.getString("prioridad"));
-        ot.setFechaRequerida( rs.getString("fecha_requerida"));
-        ot.setDescripcion(    rs.getString("descripcion"));
-        ot.setEquipoId(       rs.getInt("equipo_id"));
-        ot.setLocalizacion(   rs.getString("localizacion"));
-        ot.setEstadoEquipo(   rs.getString("estado_equipo"));
-        ot.setRecibidoPor(    rs.getString("recibido_por"));
-        ot.setNotasTecnico(   rs.getString("notas_tecnico"));
-        ot.setFechaRespuesta( rs.getString("fecha_respuesta"));
-        ot.setFechaInicio(    rs.getString("fecha_inicio"));
-        ot.setFechaTermino(   rs.getString("fecha_termino"));
-        ot.setFechaEntrega(   rs.getString("fecha_entrega"));
-        ot.setCodigoFalla(    rs.getString("codigo_falla"));
-        ot.setDescCausa(      rs.getString("desc_causa"));
-        ot.setAccionRealizada(rs.getString("accion_realizada"));
-        ot.setPrevencion(     rs.getString("prevencion"));
-        ot.setDuracionDias(   rs.getInt("duracion_dias"));
-        ot.setAceptadaPor(    rs.getString("aceptada_por"));
-        ot.setCreadoPor(      rs.getString("creado_por"));
+        ot.setId(              rs.getInt("id"));
+        ot.setNumeroOt(        rs.getString("numero_ot"));
+        ot.setFechaSolicitud(  rs.getString("fecha_solicitud"));
+        ot.setFechaRequerida(  rs.getString("fecha_requerida"));
+        ot.setDescripcion(     rs.getString("descripcion"));
+        ot.setNotasTecnico(    rs.getString("notas_tecnico"));
+        ot.setOficio(          rs.getString("oficio"));
+        ot.setFechaVencimiento(rs.getString("fecha_vencimiento"));
+
+        ot.setEstadoId(        rs.getInt("estado_id"));
+        ot.setTipoOtId(        rs.getInt("tipo_ot_id"));
+        ot.setPrioridadId(     rs.getInt("prioridad_id"));
+        ot.setEstadoEquipoId(  rs.getInt("estado_equipo_id"));
+        ot.setCodigoFallaId(   rs.getInt("codigo_falla_id"));
+        ot.setEquipoId(        rs.getInt("equipo_id"));
+        ot.setLocalizacionId(  rs.getInt("localizacion_id"));
+        ot.setRecibidoPorId(   rs.getInt("recibido_por_id"));
+        ot.setCreadoPorId(     rs.getInt("creado_por_id"));
+        ot.setAceptadaPorId(   rs.getInt("aceptada_por_id"));
+        ot.setInstruccionId(   rs.getInt("instruccion_id"));
+
+        ot.setDescCausa(       rs.getString("desc_causa"));
+        ot.setAccionRealizada( rs.getString("accion_realizada"));
+        ot.setPrevencion(      rs.getString("prevencion"));
+        ot.setDuracionDias(    rs.getInt("duracion_dias"));
+        ot.setFechaRespuesta(  rs.getString("fecha_respuesta"));
+        ot.setFechaInicio(     rs.getString("fecha_inicio"));
+        ot.setFechaTermino(    rs.getString("fecha_termino"));
+        ot.setFechaEntrega(    rs.getString("fecha_entrega"));
+        ot.setRespuestaEst(    rs.getString("respuesta_est"));
+        ot.setRespuestaReal(   rs.getString("respuesta_real"));
+        ot.setInicioEst(       rs.getString("inicio_est"));
+        ot.setInicioReal(      rs.getString("inicio_real"));
+        ot.setTerminoEst(      rs.getString("termino_est"));
+        ot.setTerminoReal(     rs.getString("termino_real"));
+
+        ot.setEstadoNombre(       rs.getString("estado_nombre"));
+        ot.setTipoOtNombre(       rs.getString("tipo_ot_nombre"));
+        ot.setPrioridadNombre(    rs.getString("prioridad_nombre"));
+        ot.setEstadoEquipoNombre( rs.getString("estado_equipo_nombre"));
+        ot.setCodigoFallaNombre(  rs.getString("codigo_falla_nombre"));
+        ot.setLocalizacionNombre( rs.getString("localizacion_nombre"));
+        ot.setEquipoNombre(       rs.getString("equipo_nombre"));
+        ot.setCreadoPorNombre(    rs.getString("creado_por_nombre"));
+        ot.setRecibidoPorNombre(  rs.getString("recibido_por_nombre"));
         return ot;
     }
 }

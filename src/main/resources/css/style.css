@@ -270,8 +270,7 @@
      -fx-text-fill: white;
      -fx-font-size: 13px;
      -fx-font-weight: bold;
- }
-
+}
  .sidebar-rol-usuario {
      -fx-text-fill: #f0a500;
      -fx-font-size: 11px;
@@ -372,4 +371,215 @@
  .card-title {
      -fx-font-size: 14px;
      -fx-font-weight: bold;
+ }
+ /* ============================= */
+ /* CONTENIDO GENERAL */
+ /* ============================= */
+
+ .content-area {
+     -fx-background-color: #f4f6f9;
+ }
+
+ /* ============================= */
+ /* SCROLL TRANSPARENTE */
+ /* ============================= */
+
+ .scroll-transparente {
+     -fx-background-color: transparent;
+     -fx-background: transparent;
+ }
+
+ .scroll-transparente .viewport {
+     -fx-background-color: transparent;
+ }
+
+ /* ============================= */
+ /* HUB DE CATÁLOGOS */
+ /* ============================= */
+
+ .hub-container {
+     -fx-background-color: transparent;
+ }
+
+ .catalog-card {
+     -fx-background-color: white;
+     -fx-background-radius: 10;
+     -fx-border-radius: 10;
+
+     -fx-border-color: #dcdcdc;
+     -fx-border-width: 1;
+
+     -fx-spacing: 8;
+     -fx-alignment: CENTER;
+
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 2, 2);
+ }
+
+ .catalog-card:hover {
+     -fx-background-color: #f8fbff;
+     -fx-border-color: #4a90e2;
+     -fx-cursor: hand;
+
+     -fx-effect: dropshadow(gaussian, rgba(74,144,226,0.3), 12, 0, 3, 3);
+ }
+
+ .catalog-card-wide {
+     -fx-pref-width: 300;
+ }
+
+ /* Icono */
+ .card-icon {
+     -fx-font-size: 28px;
+ }
+
+ /* Título */
+ .card-title {
+     -fx-font-size: 14px;
+     -fx-font-weight: bold;
+     -fx-text-fill: #333;
+ }
+
+ /* Descripción */
+ .card-desc {
+     -fx-font-size: 11px;
+     -fx-text-fill: #777;
+     -fx-wrap-text: true;
+     -fx-text-alignment: center;
+ }
+
+ /* ============================= */
+ /* CRUD SUBHEADER */
+ /* ============================= */
+
+ .crud-subheader {
+     -fx-background-color: #ffffff;
+ }
+
+ /* Título del submódulo */
+ .crud-subheader-title {
+     -fx-font-size: 15px;
+     -fx-font-weight: bold;
+     -fx-text-fill: #333;
+ }
+
+ /* Botón volver */
+ .btn-volver {
+     -fx-background-color: transparent;
+     -fx-text-fill: #1a3a5c;
+     -fx-font-weight: bold;
+ }
+
+ .btn-volver:hover {
+     -fx-text-fill: #24538a;
+ }
+
+ /* ============================= */
+ /* BOTONES CRUD */
+ /* ============================= */
+
+ .btn-primary {
+     -fx-background-color: #1a3a5c;
+     -fx-text-fill: white;
+     -fx-font-weight: bold;
+     -fx-background-radius: 4;
+ }
+
+ .btn-primary:hover {
+     -fx-background-color: #24538a;
+ }
+
+ .btn-secondary {
+     -fx-background-color: transparent;
+     -fx-border-color: #ccc;
+     -fx-text-fill: #555;
+     -fx-background-radius: 4;
+ }
+
+ .btn-secondary:hover {
+     -fx-background-color: #f0f0f0;
+ }
+
+ .btn-danger {
+     -fx-background-color: #c0392b;
+     -fx-text-fill: white;
+     -fx-background-radius: 4;
+ }
+
+ .btn-danger:hover {
+     -fx-background-color: #e74c3c;
+ }
+
+ /* ============================= */
+ /* TABLA */
+ /* ============================= */
+
+ .tabla-gman {
+     -fx-border-color: #dcdcdc;
+     -fx-background-color: white;
+ }
+
+ .tabla-gman .column-header-background {
+     -fx-background-color: #1a3a5c;
+ }
+
+ .tabla-gman .column-header,
+ .tabla-gman .filler {
+     -fx-size: 36;
+     -fx-background-color: #1a3a5c;
+ }
+
+ .tabla-gman .label {
+     -fx-text-fill: white;
+     -fx-font-weight: bold;
+ }
+
+ .table-placeholder {
+     -fx-text-fill: #999;
+ }
+
+ /* ============================= */
+ /* OVERLAY (MODAL) */
+ /* ============================= */
+
+ .overlay-backdrop {
+     -fx-background-color: rgba(0,0,0,0.45);
+     -fx-alignment: CENTER;
+ }
+
+ /* Tarjeta del formulario */
+ .form-card {
+     -fx-background-color: white;
+     -fx-background-radius: 10;
+     -fx-border-radius: 10;
+
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 5);
+ }
+
+ /* Título */
+ .form-title {
+     -fx-font-size: 16px;
+     -fx-font-weight: bold;
+ }
+
+ /* Labels */
+ .form-label {
+     -fx-font-size: 12px;
+     -fx-text-fill: #444;
+ }
+
+ /* Inputs */
+ .form-field {
+     -fx-border-color: #ccc;
+     -fx-border-radius: 4;
+     -fx-background-radius: 4;
+ }
+
+ .form-field:focused {
+     -fx-border-color: #1a3a5c;
+ }
+
+ /* Error */
+ .form-error {
+     -fx-text-fill: #c0392b;
+     -fx-font-size: 12px;
  }

@@ -15,23 +15,16 @@ public class AuthService {
     }
 
     // ─── Login ───────────────────────────────────────────────────────
-    public boolean login(String username, String password) {
-        try {
-            return usuarioRepo.checkPassword(username, password);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+    // CORREGIDO: ya no silencia la excepción con RuntimeException.
+    // El caller (LoginViewModel) la captura y muestra el mensaje real al usuario.
+    public boolean login(String username, String password) throws Exception {
+        return usuarioRepo.checkPassword(username, password);
     }
 
     // ─── Obtiene usuario completo con rol ────────────────────────────
-    public Usuario getUsuario(String username) {
-        try {
-            return usuarioRepo.findByUsername(username);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    // CORREGIDO: propaga la excepción en vez de retornar null silenciosamente.
+    public Usuario getUsuario(String username) throws Exception {
+        return usuarioRepo.findByUsername(username);
     }
 
     // ─── Registro con rol y validaciones ────────────────────────────
@@ -44,7 +37,7 @@ public class AuthService {
         if (nombre == null || nombre.isBlank())
             throw new IllegalArgumentException("El nombre no puede estar vacío.");
 
-        if (password == null || password.length() < 4)
+        if (password == null || password.length() < 8)
             throw new IllegalArgumentException("La contraseña debe tener al menos 4 caracteres.");
 
         if (rol == null)
@@ -88,8 +81,11 @@ public class AuthService {
     }
 
     // ─── Verifica permiso de un usuario sobre un módulo ─────────────
-    public boolean tienePermiso(String username, String modulo) {
-        Usuario u = getUsuario(username);
+    // CORREGIDO: este método no debería usarse para verificar la sesión activa.
+    // Para eso usa SessionManager directamente. Este método queda solo para
+    // consultas administrativas sobre otros usuarios (ej: GestionUsuarios).
+    public boolean tienePermiso(String username, String modulo) throws Exception {
+        Usuario u = usuarioRepo.findByUsername(username);
         if (u == null) return false;
         return u.tienePermiso(modulo);
     }

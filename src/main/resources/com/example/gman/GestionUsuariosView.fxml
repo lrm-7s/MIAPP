@@ -13,25 +13,19 @@
           AnchorPane.rightAnchor="0"
           spacing="0">
 
-        <!-- Encabezado -->
-        <HBox styleClass="modulo-header"
-              alignment="CENTER_LEFT"
-              spacing="16">
+        <!-- HEADER -->
+        <HBox styleClass="modulo-header" alignment="CENTER_LEFT" spacing="16">
             <VBox HBox.hgrow="ALWAYS" spacing="4">
-                <Label text="Gestión de Usuarios"
-                       styleClass="modulo-titulo"/>
-                <Label text="Administre los usuarios y sus roles en el sistema"
+                <Label text="Gestión de Usuarios" styleClass="modulo-titulo"/>
+                <Label text="Administre los usuarios y sus permisos en el sistema"
                        styleClass="modulo-subtitulo"/>
             </VBox>
-            <Button text="+ Nuevo Usuario"
-                    styleClass="btn-primario"
-                    onAction="#abrirRegistro"/>
+            <Button fx:id="btnRegistrar" text="+ Nuevo Usuario"
+                    styleClass="btn-primario" onAction="#abrirRegistro"/>
         </HBox>
 
-        <!-- Cuerpo -->
-        <VBox styleClass="modulo-body"
-              VBox.vgrow="ALWAYS"
-              spacing="12">
+        <!-- CUERPO -->
+        <VBox styleClass="modulo-body" VBox.vgrow="ALWAYS" spacing="12">
 
             <!-- Buscador -->
             <HBox spacing="8" alignment="CENTER_LEFT">
@@ -43,110 +37,193 @@
             </HBox>
 
             <!-- Tabla -->
-            <TableView fx:id="usuariosTable"
-                       VBox.vgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       styleClass="tabla-datos">
+            <TableView fx:id="usuariosTable" VBox.vgrow="ALWAYS"
+                       maxWidth="Infinity" styleClass="tabla-datos">
                 <columns>
-                    <TableColumn fx:id="colUsername"
-                                 text="Usuario"
-                                 prefWidth="150"/>
-                    <TableColumn fx:id="colNombre"
-                                 text="Nombre"
-                                 prefWidth="220"/>
-                    <TableColumn fx:id="colRol"
-                                 text="Rol"
-                                 prefWidth="130"/>
-                    <!-- Columna de acciones generada desde el controller -->
-                    <TableColumn fx:id="colAcciones"
-                                 text="Acciones"
-                                 prefWidth="160"
+                    <TableColumn fx:id="colUsername" text="Usuario"   prefWidth="150"/>
+                    <TableColumn fx:id="colNombre"   text="Nombre"    prefWidth="220"/>
+                    <TableColumn fx:id="colRol"      text="Rol"       prefWidth="130"/>
+                    <TableColumn fx:id="colAcciones" text="Acciones"  prefWidth="160"
                                  sortable="false"/>
                 </columns>
                 <placeholder>
-                    <Label text="No hay usuarios registrados."
-                           styleClass="tabla-placeholder"/>
+                    <Label text="No hay usuarios registrados." styleClass="tabla-placeholder"/>
                 </placeholder>
             </TableView>
 
-            <!-- Mensaje de estado -->
-            <Label fx:id="mensajeLabel"
-                   styleClass="mensaje-label"
-                   wrapText="true"
-                   visible="false"
-                   maxWidth="Infinity"/>
+            <!-- Mensaje -->
+            <Label fx:id="mensajeLabel" styleClass="mensaje-label"
+                   wrapText="true" visible="false" maxWidth="Infinity"/>
 
         </VBox>
-
     </VBox>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         Panel de edición (overlay) — oculto por defecto
+         OVERLAY DE EDICIÓN — con panel de permisos
          ═══════════════════════════════════════════════════════════════ -->
     <StackPane fx:id="overlayPane"
-               AnchorPane.topAnchor="0"
-               AnchorPane.bottomAnchor="0"
-               AnchorPane.leftAnchor="0"
-               AnchorPane.rightAnchor="0"
+               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
                visible="false"
                style="-fx-background-color: rgba(0,0,0,0.45);">
 
-        <VBox styleClass="dialogo-panel"
-              spacing="16"
-              maxWidth="420"
-              maxHeight="340"
-              alignment="CENTER">
+        <VBox styleClass="dialogo-panel" spacing="14"
+              maxWidth="680" maxHeight="620" alignment="TOP_CENTER"
+              style="-fx-padding: 20; -fx-background-color: white;
+                     -fx-background-radius: 10; -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.3),16,0,0,4);">
 
-            <Label fx:id="dialogoTitulo"
-                   text="Editar Usuario"
-                   styleClass="dialogo-titulo"/>
+            <!-- Título -->
+            <Label fx:id="dialogoTitulo" text="Editar Usuario"
+                   styleClass="dialogo-titulo"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
-            <GridPane hgap="12" vgap="10">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="110" halignment="RIGHT"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                </columnConstraints>
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                <VBox spacing="14">
 
-                <Label text="Usuario:" GridPane.rowIndex="0" GridPane.columnIndex="0"
-                       styleClass="campo-label"/>
-                <TextField fx:id="editUsername"
-                           GridPane.rowIndex="0" GridPane.columnIndex="1"
-                           styleClass="campo-input"
-                           editable="false"
-                           style="-fx-opacity: 0.7;"/>
+                    <!-- ── Datos del usuario ── -->
+                    <Label text="Datos del usuario"
+                           style="-fx-font-weight: bold; -fx-text-fill: #1565C0; -fx-font-size: 13px;"/>
 
-                <Label text="Nombre:" GridPane.rowIndex="1" GridPane.columnIndex="0"
-                       styleClass="campo-label"/>
-                <TextField fx:id="editNombre"
-                           GridPane.rowIndex="1" GridPane.columnIndex="1"
-                           styleClass="campo-input"/>
+                    <GridPane hgap="12" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="130" halignment="RIGHT"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
 
-                <Label text="Nueva contraseña:" GridPane.rowIndex="2" GridPane.columnIndex="0"
-                       styleClass="campo-label"/>
-                <PasswordField fx:id="editPassword"
-                               GridPane.rowIndex="2" GridPane.columnIndex="1"
-                               promptText="Dejar vacío para no cambiar"
-                               styleClass="campo-input"/>
+                        <Label text="Usuario:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                               styleClass="campo-label"/>
+                        <TextField fx:id="editUsername"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                   styleClass="campo-input" editable="false"
+                                   style="-fx-opacity: 0.7;"/>
 
-                <Label text="Rol:" GridPane.rowIndex="3" GridPane.columnIndex="0"
-                       styleClass="campo-label"/>
-                <ComboBox fx:id="editRolCombo"
-                          GridPane.rowIndex="3" GridPane.columnIndex="1"
-                          maxWidth="Infinity"
-                          styleClass="campo-input"/>
-            </GridPane>
+                        <Label text="Nombre:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                               styleClass="campo-label"/>
+                        <TextField fx:id="editNombre"
+                                   GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                   styleClass="campo-input"/>
 
-            <!-- Botones del diálogo -->
+                        <Label text="Nueva contraseña:" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                               styleClass="campo-label"/>
+                        <PasswordField fx:id="editPassword"
+                                       GridPane.rowIndex="2" GridPane.columnIndex="1"
+                                       promptText="Dejar vacío para no cambiar"
+                                       styleClass="campo-input"/>
+
+                        <Label text="Rol:" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                               styleClass="campo-label"/>
+                        <ComboBox fx:id="editRolCombo"
+                                  GridPane.rowIndex="3" GridPane.columnIndex="1"
+                                  maxWidth="Infinity" styleClass="campo-input"/>
+                    </GridPane>
+
+                    <!-- ── Separador ── -->
+                    <Separator/>
+
+                    <!-- ── Panel de permisos ── -->
+                    <Label text="Permisos del usuario"
+                           style="-fx-font-weight: bold; -fx-text-fill: #1565C0; -fx-font-size: 13px;"/>
+                    <Label text="(No aplica para Administrador)"
+                           style="-fx-text-fill: #999; -fx-font-size: 11px;"/>
+
+                    <!-- Cabecera de columnas -->
+                    <GridPane hgap="8" vgap="8">
+                        <columnConstraints>
+                            <ColumnConstraints prefWidth="160" minWidth="140"/>
+                            <ColumnConstraints prefWidth="70"  halignment="CENTER"/>
+                            <ColumnConstraints prefWidth="70"  halignment="CENTER"/>
+                            <ColumnConstraints prefWidth="70"  halignment="CENTER"/>
+                            <ColumnConstraints prefWidth="80"  halignment="CENTER"/>
+                        </columnConstraints>
+
+                        <!-- Cabecera -->
+                        <Label text="Módulo"    GridPane.rowIndex="0" GridPane.columnIndex="0"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="Ver"       GridPane.rowIndex="0" GridPane.columnIndex="1"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="Crear"     GridPane.rowIndex="0" GridPane.columnIndex="2"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="Editar"    GridPane.rowIndex="0" GridPane.columnIndex="3"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="Eliminar"  GridPane.rowIndex="0" GridPane.columnIndex="4"
+                               style="-fx-font-weight: bold;"/>
+
+                        <!-- EQUIPOS -->
+                        <Label text="Equipos" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkEquiposVer"      GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkEquiposCrear"    GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkEquiposEditar"   GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkEquiposEliminar" GridPane.rowIndex="1" GridPane.columnIndex="4"/>
+
+                        <!-- MANO DE OBRA -->
+                        <Label text="Mano de Obra" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkManoObraVer"      GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkManoObraCrear"    GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkManoObraEditar"   GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkManoObraEliminar" GridPane.rowIndex="2" GridPane.columnIndex="4"/>
+
+                        <!-- ORDEN DE TRABAJO -->
+                        <Label text="Orden de Trabajo" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkOtVer"      GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkOtCrear"    GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkOtEditar"   GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkOtEliminar" GridPane.rowIndex="3" GridPane.columnIndex="4"/>
+
+                        <!-- CATÁLOGO -->
+                        <Label text="Catálogos" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkCatalogoVer"      GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkCatalogoCrear"    GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkCatalogoEditar"   GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkCatalogoEliminar" GridPane.rowIndex="4" GridPane.columnIndex="4"/>
+
+                        <!-- PLAN MANTENIMIENTO -->
+                        <Label text="Plan Mantenimiento" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkPlanVer"      GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkPlanCrear"    GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkPlanEditar"   GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkPlanEliminar" GridPane.rowIndex="5" GridPane.columnIndex="4"/>
+
+                        <!-- HISTÓRICO -->
+                        <Label text="Histórico" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkHistoricoVer"      GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkHistoricoCrear"    GridPane.rowIndex="6" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkHistoricoEditar"   GridPane.rowIndex="6" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkHistoricoEliminar" GridPane.rowIndex="6" GridPane.columnIndex="4"/>
+
+                        <!-- LOCALIZACIONES -->
+                        <Label text="Localizaciones" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkLocVer"      GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkLocCrear"    GridPane.rowIndex="7" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkLocEditar"   GridPane.rowIndex="7" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkLocEliminar" GridPane.rowIndex="7" GridPane.columnIndex="4"/>
+
+                        <!-- REPORTES -->
+                        <Label text="Reportes" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkReportesVer"      GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkReportesCrear"    GridPane.rowIndex="8" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkReportesEditar"   GridPane.rowIndex="8" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkReportesEliminar" GridPane.rowIndex="8" GridPane.columnIndex="4"/>
+
+                        <!-- GESTIÓN USUARIOS -->
+                        <Label text="Gestión Usuarios" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                        <CheckBox fx:id="chkUsuariosVer"      GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                        <CheckBox fx:id="chkUsuariosCrear"    GridPane.rowIndex="9" GridPane.columnIndex="2"/>
+                        <CheckBox fx:id="chkUsuariosEditar"   GridPane.rowIndex="9" GridPane.columnIndex="3"/>
+                        <CheckBox fx:id="chkUsuariosEliminar" GridPane.rowIndex="9" GridPane.columnIndex="4"/>
+
+                    </GridPane>
+                </VBox>
+            </ScrollPane>
+
+            <!-- Botones -->
             <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Button text="Cancelar"
-                        styleClass="btn-secundario"
+                <Button text="Cancelar" styleClass="btn-secundario"
                         onAction="#cerrarDialogo"/>
-                <Button text="Guardar cambios"
-                        styleClass="btn-primario"
+                <Button text="Guardar cambios" styleClass="btn-primario"
                         onAction="#guardarEdicion"/>
             </HBox>
 
         </VBox>
     </StackPane>
-
 </AnchorPane>

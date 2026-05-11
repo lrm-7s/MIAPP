@@ -6,6 +6,7 @@ module com.example.gman {
 
     requires org.xerial.sqlitejdbc;
     requires org.slf4j;
+    requires jbcrypt;
 
 
     opens com.example.gman.domain.model to javafx.base;

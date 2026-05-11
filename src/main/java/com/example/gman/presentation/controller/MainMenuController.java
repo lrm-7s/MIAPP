@@ -12,7 +12,7 @@ public class MainMenuController {
     // ─── Contenedor central ──────────────────────────────────────────
     @FXML private AnchorPane contentPane;
 
-    // ─── Botones del menú lateral ────────────────────────────────────
+    // ─── Botones del sidebar ─────────────────────────────────────────
     @FXML private Button btnEquipos;
     @FXML private Button btnManoObra;
     @FXML private Button btnOrdenTrabajo;
@@ -21,14 +21,14 @@ public class MainMenuController {
     @FXML private Button btnPlanMantenimiento;
     @FXML private Button btnHistorico;
     @FXML private Button btnLocalizaciones;
+    @FXML private Button btnInventario;
     @FXML private Button btnGestionUsuarios;
-    @FXML private Button btnEmpleados;          // ← corregido (era btnEpleados)
+    @FXML private Button btnEmpleados;
 
-    // ─── Etiquetas de usuario ────────────────────────────────────────
+    // ─── Etiquetas de sesión ─────────────────────────────────────────
     @FXML private Label lblUsuario;
     @FXML private Label lblRol;
 
-    // ─── Dependencias ────────────────────────────────────────────────
     private AppCoordinator coordinator;
 
     public void setCoordinator(AppCoordinator coordinator) {
@@ -36,29 +36,29 @@ public class MainMenuController {
     }
 
     // ════════════════════════════════════════════════════════════════
-    //  PERMISOS — oculta botones según rol del usuario en sesión
+    //  PERMISOS
     // ════════════════════════════════════════════════════════════════
 
     public void aplicarPermisos(SessionManager session) {
-
         if (lblUsuario != null) lblUsuario.setText(session.getNombreUsuario());
         if (lblRol     != null) lblRol.setText(session.getRolDisplayName());
 
-        aplicarVisibilidad(btnEquipos,            session, "EQUIPOS");
-        aplicarVisibilidad(btnManoObra,           session, "MANO_OBRA");
-        aplicarVisibilidad(btnOrdenTrabajo,       session, "ORDEN_TRABAJO");
-        aplicarVisibilidad(btnReportes,           session, "REPORTES");
-        aplicarVisibilidad(btnCatalogo,           session, "CATALOGO");
-        aplicarVisibilidad(btnPlanMantenimiento,  session, "PLAN_MANTENIMIENTO");
-        aplicarVisibilidad(btnHistorico,          session, "HISTORICO");
-        aplicarVisibilidad(btnLocalizaciones,     session, "LOCALIZACIONES");
-        aplicarVisibilidad(btnGestionUsuarios,    session, "GESTION_USUARIOS");
-        aplicarVisibilidad(btnEmpleados,          session, "GESTION_EMPLEADOS");
+        setVisible(btnEquipos,           session, "EQUIPOS");
+        setVisible(btnManoObra,          session, "MANO_OBRA");
+        setVisible(btnEmpleados,         session, "MANO_OBRA");
+        setVisible(btnOrdenTrabajo,      session, "ORDEN_TRABAJO");
+        setVisible(btnReportes,          session, "REPORTES");
+        setVisible(btnCatalogo,          session, "CATALOGO");
+        setVisible(btnPlanMantenimiento, session, "PLAN_MANTENIMIENTO");
+        setVisible(btnHistorico,         session, "HISTORICO");
+        setVisible(btnLocalizaciones,    session, "LOCALIZACIONES");
+        setVisible(btnInventario,        session, "INVENTARIO");
+        setVisible(btnGestionUsuarios,   session, "GESTION_USUARIOS");
     }
 
-    private void aplicarVisibilidad(Button btn, SessionManager session, String modulo) {
+    private void setVisible(Button btn, SessionManager session, String modulo) {
         if (btn == null) return;
-        boolean permitido = session.tienePermiso(modulo);
+        boolean permitido = session.puedeVer(modulo);
         btn.setVisible(permitido);
         btn.setManaged(permitido);
     }
@@ -69,38 +69,27 @@ public class MainMenuController {
 
     public void setContent(AnchorPane view) {
         contentPane.getChildren().setAll(view);
-        AnchorPane.setTopAnchor(view, 0.0);
+        AnchorPane.setTopAnchor(view,    0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
-        AnchorPane.setLeftAnchor(view, 0.0);
-        AnchorPane.setRightAnchor(view, 0.0);
-    }
-
-    public void loadModule(String fxmlPath) {
-        try {
-            javafx.fxml.FXMLLoader loader =
-                    new javafx.fxml.FXMLLoader(getClass().getResource(fxmlPath));
-            AnchorPane module = loader.load();
-            setContent(module);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        AnchorPane.setLeftAnchor(view,   0.0);
+        AnchorPane.setRightAnchor(view,  0.0);
     }
 
     // ════════════════════════════════════════════════════════════════
-    //  ACCIONES DEL MENÚ
+    //  ACCIONES — todas delegan al coordinator
     // ════════════════════════════════════════════════════════════════
 
-    @FXML private void openEquipos()           { coordinator.openEquipos(); }
-    @FXML private void openGestionUsuarios()   { coordinator.openGestionUsuarios(); }
-    @FXML private void openEmpleados()         { coordinator.openEmpleados(); }
-    @FXML private void openManoObra()          { loadModule("/com/example/gman/ManoObraView.fxml"); }
-    @FXML private void openOrdenTrabajo()      { loadModule("/com/example/gman/OrdenTrabajoCierre.fxml"); }
-    @FXML private void openReportes()          { loadModule("/com/example/gman/ReportesView.fxml"); }
-    @FXML private void openCatalogo()          { loadModule("/com/example/gman/CatalogosView.fxml"); }
-    @FXML private void openPlanMantenimiento() { loadModule("/com/example/gman/PlanMantenimientoView.fxml"); }
-    @FXML private void openHistorico()         { loadModule("/com/example/gman/HistoricoView.fxml"); }
-    @FXML private void openLocalizaciones()    { loadModule("/com/example/gman/LocalizacionesView.fxml"); }
-    @FXML private void openInventario() {loadModule("/com/example/gman/InventarioView.fxml");}
+    @FXML private void openEquipos()           { coordinator.openEquipos();           }
+    @FXML private void openEmpleados()         { coordinator.openEmpleados();         }
+    @FXML private void openManoObra()          { coordinator.openEmpleados();         }
+    @FXML private void openOrdenTrabajo()      { coordinator.openOrdenTrabajo();      }
+    @FXML private void openReportes()          { coordinator.openReportes();          }
+    @FXML private void openCatalogo()          { coordinator.openCatalogo();          }
+    @FXML private void openPlanMantenimiento() { coordinator.openPlanMantenimiento(); }
+    @FXML private void openHistorico()         { coordinator.openHistorico();         }
+    @FXML private void openLocalizaciones()    { coordinator.openLocalizaciones();    }
+    @FXML private void openInventario()        { coordinator.openInventario();        }
+    @FXML private void openGestionUsuarios()   { coordinator.openGestionUsuarios();   }
 
     @FXML private void openAbout() {
         System.out.println("GMAN v1.0 - Sistema de Gestión de Mantenimiento");

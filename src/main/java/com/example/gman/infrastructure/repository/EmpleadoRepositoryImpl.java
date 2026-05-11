@@ -8,122 +8,183 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación SQLite del repositorio de Empleados.
+ * Todos los SELECTs hacen JOIN con catalogo y localizaciones
+ * para traer nombres descriptivos listos para la vista.
+ */
 public class EmpleadoRepositoryImpl implements EmpleadoRepository {
 
-    // ─── SQL constants ────────────────────────────────────────────────
-    private static final String SELECT_ALL =
-            "SELECT numero_empleado, nombre, direccion, posicion, celular, " +
-                    "       departamento, correo, salario_por_hora, " +
-                    "       tiempo_extra1, tiempo_extra2, tiempo_extra3 " +
-                    "FROM empleados ORDER BY nombre";
+    private static final String SELECT_BASE = """
+            SELECT e.numero_empleado,
+                   e.nombre,
+                   e.direccion,
+                   e.celular,
+                   e.correo,
+                   e.posicion_id,
+                   cp.nombre   AS posicion_nombre,
+                   e.departamento_id,
+                   cd.nombre   AS departamento_nombre,
+                   e.localizacion_id,
+                   l.descripcion AS localizacion_desc,
+                   e.salario_por_hora,
+                   e.tiempo_extra1,
+                   e.tiempo_extra2,
+                   e.tiempo_extra3
+            FROM empleados e
+            LEFT JOIN catalogo   cp ON cp.id = e.posicion_id
+            LEFT JOIN catalogo   cd ON cd.id = e.departamento_id
+            LEFT JOIN localizaciones l ON l.id = e.localizacion_id
+            """;
 
-    private static final String SELECT_BY_ID =
-            "SELECT numero_empleado, nombre, direccion, posicion, celular, " +
-                    "       departamento, correo, salario_por_hora, " +
-                    "       tiempo_extra1, tiempo_extra2, tiempo_extra3 " +
-                    "FROM empleados WHERE numero_empleado = ?";
+    // ════════════════════════════════════════════════════════════════
+    //  LECTURA
+    // ════════════════════════════════════════════════════════════════
 
-    private static final String INSERT =
-            "INSERT INTO empleados " +
-                    "(nombre, direccion, posicion, celular, departamento, correo, " +
-                    " salario_por_hora, tiempo_extra1, tiempo_extra2, tiempo_extra3) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    private static final String UPDATE =
-            "UPDATE empleados SET " +
-                    "nombre = ?, direccion = ?, posicion = ?, celular = ?, " +
-                    "departamento = ?, correo = ?, salario_por_hora = ?, " +
-                    "tiempo_extra1 = ?, tiempo_extra2 = ?, tiempo_extra3 = ? " +
-                    "WHERE numero_empleado = ?";
-
-    private static final String DELETE =
-            "DELETE FROM empleados WHERE numero_empleado = ?";
-
-    // ─── Listar todos ────────────────────────────────────────────────
     @Override
-    public List<Empleado> getAllEmpleados() throws Exception {
+    public List<Empleado> findAll() {
+        String sql = SELECT_BASE + "ORDER BY e.nombre";
         List<Empleado> lista = new ArrayList<>();
-
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                lista.add(mapRow(rs));
-            }
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)) {
+            while (rs.next()) lista.add(mapear(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return lista;
     }
 
-    // ─── Buscar por número ───────────────────────────────────────────
     @Override
-    public Empleado findByNumero(int numeroEmpleado) throws Exception {
+    public List<Empleado> findByDepartamento(int departamentoId) {
+        String sql = SELECT_BASE + "WHERE e.departamento_id = ? ORDER BY e.nombre";
+        List<Empleado> lista = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID)) {
-
-            stmt.setInt(1, numeroEmpleado);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, departamentoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    @Override
+    public Empleado findById(int numeroEmpleado) {
+        String sql = SELECT_BASE + "WHERE e.numero_empleado = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, numeroEmpleado);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    // ─── Insertar ────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  ESCRITURA
+    // ════════════════════════════════════════════════════════════════
+
     @Override
-    public void addEmpleado(Empleado e) throws Exception {
+    public void save(Empleado e) {
+        String sql = """
+                INSERT INTO empleados
+                    (nombre, direccion, posicion_id, celular, correo,
+                     departamento_id, localizacion_id,
+                     salario_por_hora, tiempo_extra1, tiempo_extra2, tiempo_extra3)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT,
-                     Statement.RETURN_GENERATED_KEYS)) {
-
-            bindEmpleado(stmt, e, false);
-            stmt.executeUpdate();
-
-            // Recuperar el ID auto-generado
-            try (ResultSet keys = stmt.getGeneratedKeys()) {
-                if (keys.next()) e.setNumeroEmpleado(keys.getInt(1));
-            }
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, e.getNombre());
+            ps.setString(2, e.getDireccion());
+            setIntOrNull(ps, 3, e.getPosicionId());
+            ps.setString(4, e.getCelular());
+            ps.setString(5, e.getCorreo());
+            setIntOrNull(ps, 6, e.getDepartamentoId());
+            setIntOrNull(ps, 7, e.getLocalizacionId());
+            ps.setDouble(8,  e.getSalarioPorHora());
+            ps.setDouble(9,  e.getTiempoExtra1());
+            ps.setDouble(10, e.getTiempoExtra2());
+            ps.setDouble(11, e.getTiempoExtra3());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error al guardar empleado: " + ex.getMessage(), ex);
         }
     }
 
-    // ─── Actualizar ──────────────────────────────────────────────────
     @Override
-    public void updateEmpleado(Empleado e) throws Exception {
+    public void update(Empleado e) {
+        String sql = """
+                UPDATE empleados SET
+                    nombre          = ?,
+                    direccion       = ?,
+                    posicion_id     = ?,
+                    celular         = ?,
+                    correo          = ?,
+                    departamento_id = ?,
+                    localizacion_id = ?,
+                    salario_por_hora= ?,
+                    tiempo_extra1   = ?,
+                    tiempo_extra2   = ?,
+                    tiempo_extra3   = ?
+                WHERE numero_empleado = ?
+                """;
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(UPDATE)) {
-
-            bindEmpleado(stmt, e, true);
-            int filas = stmt.executeUpdate();
-            if (filas == 0)
-                throw new Exception("Empleado #" + e.getNumeroEmpleado() + " no encontrado.");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, e.getNombre());
+            ps.setString(2, e.getDireccion());
+            setIntOrNull(ps, 3, e.getPosicionId());
+            ps.setString(4, e.getCelular());
+            ps.setString(5, e.getCorreo());
+            setIntOrNull(ps, 6, e.getDepartamentoId());
+            setIntOrNull(ps, 7, e.getLocalizacionId());
+            ps.setDouble(8,  e.getSalarioPorHora());
+            ps.setDouble(9,  e.getTiempoExtra1());
+            ps.setDouble(10, e.getTiempoExtra2());
+            ps.setDouble(11, e.getTiempoExtra3());
+            ps.setInt(12, e.getNumeroEmpleado());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error al actualizar empleado: " + ex.getMessage(), ex);
         }
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
     @Override
-    public void deleteEmpleado(int numeroEmpleado) throws Exception {
+    public void delete(int numeroEmpleado) {
+        String sql = "DELETE FROM empleados WHERE numero_empleado = ?";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(DELETE)) {
-
-            stmt.setInt(1, numeroEmpleado);
-            int filas = stmt.executeUpdate();
-            if (filas == 0)
-                throw new Exception("Empleado #" + numeroEmpleado + " no encontrado.");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, numeroEmpleado);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "No se puede eliminar: el empleado está vinculado a órdenes de trabajo u otros registros.", e);
         }
     }
 
-    // ─── Helpers privados ─────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  UTILIDADES
+    // ════════════════════════════════════════════════════════════════
 
-    /** Mapea un ResultSet a un objeto Empleado */
-    private Empleado mapRow(ResultSet rs) throws SQLException {
+    private Empleado mapear(ResultSet rs) throws SQLException {
         Empleado e = new Empleado();
         e.setNumeroEmpleado(rs.getInt("numero_empleado"));
         e.setNombre(rs.getString("nombre"));
         e.setDireccion(rs.getString("direccion"));
-        e.setPosicion(rs.getString("posicion"));
         e.setCelular(rs.getString("celular"));
-        e.setDepartamento(rs.getString("departamento"));
         e.setCorreo(rs.getString("correo"));
+        e.setPosicionId(rs.getInt("posicion_id"));
+        e.setPosicionNombre(rs.getString("posicion_nombre"));
+        e.setDepartamentoId(rs.getInt("departamento_id"));
+        e.setDepartamentoNombre(rs.getString("departamento_nombre"));
+        e.setLocalizacionId(rs.getInt("localizacion_id"));
+        e.setLocalizacionDesc(rs.getString("localizacion_desc"));
         e.setSalarioPorHora(rs.getDouble("salario_por_hora"));
         e.setTiempoExtra1(rs.getDouble("tiempo_extra1"));
         e.setTiempoExtra2(rs.getDouble("tiempo_extra2"));
@@ -131,22 +192,8 @@ public class EmpleadoRepositoryImpl implements EmpleadoRepository {
         return e;
     }
 
-    /**
-     * Vincula los parámetros del PreparedStatement.
-     * @param incluirPK  true para UPDATE (el número de empleado va al final), false para INSERT
-     */
-    private void bindEmpleado(PreparedStatement stmt, Empleado e,
-                              boolean incluirPK) throws SQLException {
-        stmt.setString(1, e.getNombre());
-        stmt.setString(2, e.getDireccion());
-        stmt.setString(3, e.getPosicion());
-        stmt.setString(4, e.getCelular());
-        stmt.setString(5, e.getDepartamento());
-        stmt.setString(6, e.getCorreo());
-        stmt.setDouble(7, e.getSalarioPorHora());
-        stmt.setDouble(8, e.getTiempoExtra1());
-        stmt.setDouble(9, e.getTiempoExtra2());
-        stmt.setDouble(10, e.getTiempoExtra3());
-        if (incluirPK) stmt.setInt(11, e.getNumeroEmpleado());
+    private void setIntOrNull(PreparedStatement ps, int index, int value) throws SQLException {
+        if (value > 0) ps.setInt(index, value);
+        else           ps.setNull(index, Types.INTEGER);
     }
 }

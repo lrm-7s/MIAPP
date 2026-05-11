@@ -2,11 +2,9 @@ package com.example.gman.coordinator;
 
 import com.example.gman.application.service.*;
 import com.example.gman.application.session.SessionManager;
-import com.example.gman.infrastructure.database.DatabaseHelper;
-import com.example.gman.infrastructure.repository.EmpleadoRepositoryImpl;
-import com.example.gman.infrastructure.repository.EquipoRepositoryImpl;
-import com.example.gman.infrastructure.repository.OrdenTrabajoRepositoryImpl;
-import com.example.gman.infrastructure.repository.UsuarioRepositoryImpl;
+import com.example.gman.config.AppConfig;
+import com.example.gman.infrastructure.network.ApiClient;
+import com.example.gman.infrastructure.repository.*;
 import com.example.gman.presentation.controller.*;
 import com.example.gman.presentation.viewmodel.EmpleadosViewModel;
 import com.example.gman.presentation.viewmodel.EquiposViewModel;
@@ -23,21 +21,18 @@ import java.io.IOException;
 
 public class AppCoordinator {
 
-    private final Stage primaryStage;
+    private final Stage          primaryStage;
     private final SessionManager sessionManager;
-    private final OrdenTrabajoService ordenTrabajoService;
 
-    // ═══════════════════════════════════════════════════════════════
-    //  SERVICIOS COMPARTIDOS — instanciados UNA SOLA VEZ
-    // ═══════════════════════════════════════════════════════════════
-    private final AuthService     authService;
-    private final EmpleadoService empleadoService;
-    private final EquipoService   equipoService;
-    private final CatalogoService catalogoService; // ← ACTIVADO
-
-    // Futuros:
-    // private final OrdenTrabajoService ordenTrabajoService;
-    // private final InventarioService   inventarioService;
+    // ════════════════════════════════════════════════════════════════
+    //  SERVICIOS — instanciados UNA SOLA VEZ
+    // ════════════════════════════════════════════════════════════════
+    private final AuthService            authService;
+    private final EmpleadoService        empleadoService;
+    private final EquipoService          equipoService;
+    private final CatalogoService        catalogoService;
+    private final LocalizacionesService  localizacionesService;
+    private final OrdenTrabajoService    ordenTrabajoService;
 
     private MainMenuController mainMenuController;
 
@@ -45,37 +40,42 @@ public class AppCoordinator {
     //  CONSTRUCTOR
     // ════════════════════════════════════════════════════════════════
     public AppCoordinator(Stage stage, SessionManager sessionManager) {
-        this.primaryStage  = stage;
+        this.primaryStage   = stage;
         this.sessionManager = sessionManager;
 
         // ── Repositorios ─────────────────────────────────────────────
-        UsuarioRepositoryImpl  usuarioRepo  = new UsuarioRepositoryImpl();
-        EmpleadoRepositoryImpl empleadoRepo = new EmpleadoRepositoryImpl();
-        DatabaseHelper         db           = new DatabaseHelper();
-        EquipoRepositoryImpl   equipoRepo   = new EquipoRepositoryImpl(db);
+        // CORRECCIÓN: Los repositorios que generamos usan DatabaseHelper
+        // con métodos estáticos — no reciben DatabaseHelper por constructor.
+        // Solo EquipoRepositoryImpl mantiene inyección si así lo tienes.
+        UsuarioRepositoryImpl        usuarioRepo  = new UsuarioRepositoryImpl();
+        EmpleadoRepositoryImpl       empleadoRepo = new EmpleadoRepositoryImpl();
+        EquipoRepositoryImpl         equipoRepo   = new EquipoRepositoryImpl();
+        LocalizacionesRepositoryImpl locRepo      = new LocalizacionesRepositoryImpl();
+        OrdenTrabajoRepositoryImpl   otRepo       = new OrdenTrabajoRepositoryImpl();
+        ApiClient apiClient        = new ApiClient(AppConfig.API_BASE_URL);
+        RemoteEquipoRepository remoteEquipoRepo = new RemoteEquipoRepository(apiClient);
+
 
         // ── Servicios ────────────────────────────────────────────────
-        this.authService     = new AuthService(usuarioRepo);
-        this.empleadoService = new EmpleadoService(empleadoRepo);
-        this.equipoService   = new EquipoService(equipoRepo, null);
-        this.catalogoService = new CatalogoService(); // ← sin repositorio externo, usa BD directa
-        OrdenTrabajoRepositoryImpl otRepo = new OrdenTrabajoRepositoryImpl();
-        this.ordenTrabajoService = new OrdenTrabajoService(
+        this.catalogoService       = new CatalogoService();
+        this.authService           = new AuthService(usuarioRepo);
+        this.empleadoService       = new EmpleadoService(empleadoRepo);
+        this.equipoService         = new EquipoService(equipoRepo,remoteEquipoRepo);
+        this.localizacionesService = new LocalizacionesService(locRepo);
+        this.ordenTrabajoService   = new OrdenTrabajoService(
                 otRepo, empleadoService, equipoService, catalogoService);
-        // Futuros:
-        // this.ordenTrabajoService = new OrdenTrabajoService(
-        //         otRepo, empleadoService, equipoService, catalogoService);
     }
 
     // ════════════════════════════════════════════════════════════════
     //  GETTERS
     // ════════════════════════════════════════════════════════════════
-    public SessionManager getSessionManager()     { return sessionManager;    }
-    public AuthService    getAuthService()        { return authService;       }
-    public EmpleadoService getEmpleadoService()   { return empleadoService;   }
-    public EquipoService  getEquipoService()      { return equipoService;     }
-    public CatalogoService getCatalogoService()   { return catalogoService;   } // ← ACTIVADO
-    public OrdenTrabajoService getOrdenTrabajoService() { return ordenTrabajoService; }
+    public SessionManager        getSessionManager()        { return sessionManager;        }
+    public AuthService           getAuthService()           { return authService;           }
+    public EmpleadoService       getEmpleadoService()       { return empleadoService;       }
+    public EquipoService         getEquipoService()         { return equipoService;         }
+    public CatalogoService       getCatalogoService()       { return catalogoService;       }
+    public LocalizacionesService getLocalizacionesService() { return localizacionesService; }
+    public OrdenTrabajoService   getOrdenTrabajoService()   { return ordenTrabajoService;   }
 
     // ════════════════════════════════════════════════════════════════
     //  INICIO
@@ -99,21 +99,16 @@ public class AppCoordinator {
     // ════════════════════════════════════════════════════════════════
     private void showLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/LoginView.fxml"));
+            FXMLLoader loader = fxml("LoginView.fxml");
             VBox root = loader.load();
-
             LoginController controller = loader.getController();
             controller.setCoordinator(this);
-
             Scene scene = new Scene(root);
             applyCSS(scene);
             primaryStage.setScene(scene);
             primaryStage.setTitle("GMAN - Login");
             primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     public void onLoginSuccess() { showMainMenu(); }
@@ -123,172 +118,177 @@ public class AppCoordinator {
     // ════════════════════════════════════════════════════════════════
     private void showMainMenu() {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/MainMenu.fxml"));
+            FXMLLoader loader = fxml("MainMenu.fxml");
             BorderPane root = loader.load();
-
             mainMenuController = loader.getController();
             mainMenuController.setCoordinator(this);
             mainMenuController.aplicarPermisos(sessionManager);
-
             Scene scene = new Scene(root);
             applyCSS(scene);
             primaryStage.setScene(scene);
             primaryStage.setTitle("GMAN - Menú Principal");
             primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     // ════════════════════════════════════════════════════════════════
-    //  MÓDULOS IMPLEMENTADOS
+    //  MÓDULOS
     // ════════════════════════════════════════════════════════════════
 
     /** Equipos */
     public void openEquipos() {
+        if (!sessionManager.puedeVer("EQUIPOS")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/EquiposView.fxml"));
+            FXMLLoader loader = fxml("EquiposView.fxml");
             AnchorPane view = loader.load();
-
             EquiposController controller = loader.getController();
-            controller.setViewModel(new EquiposViewModel(equipoService));
+            controller.setCoordinator(this);
+            controller.setViewModel(new EquiposViewModel(
+                    equipoService, catalogoService, localizacionesService));
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     /** Gestión de Usuarios */
     public void openGestionUsuarios() {
-        if (!sessionManager.tienePermiso("GESTION_USUARIOS")) return;
+        if (!sessionManager.puedeVer("GESTION_USUARIOS")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/GestionUsuariosView.fxml"));
+            FXMLLoader loader = fxml("GestionUsuariosView.fxml");
             AnchorPane view = loader.load();
-
             GestionUsuariosController controller = loader.getController();
             controller.setViewModel(new UsuariosViewModel(authService));
             controller.setCoordinator(this);
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     /** Registro de nuevo usuario */
     public void openRegistro() {
-        if (!sessionManager.tienePermiso("GESTION_USUARIOS")) return;
+        if (!sessionManager.puedeVer("GESTION_USUARIOS")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/RegistroView.fxml"));
+            FXMLLoader loader = fxml("RegistroView.fxml");
             AnchorPane view = loader.load();
-
             RegistroController controller = loader.getController();
             controller.setViewModel(new UsuariosViewModel(authService));
             controller.setCoordinator(this);
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    /** Empleados */
+    /** Mano de Obra / Empleados
+     * CORRECCIÓN: EmpleadosViewModel usa constructor vacío,
+     * los servicios se instancian internamente */
     public void openEmpleados() {
-        if (!sessionManager.tienePermiso("GESTION_EMPLEADOS")) return;
+        if (!sessionManager.puedeVer("MANO_OBRA")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/EmpleadosView.fxml"));
+            FXMLLoader loader = fxml("EmpleadosView.fxml");
             AnchorPane view = loader.load();
-
             EmpleadosController controller = loader.getController();
-            controller.setViewModel(new EmpleadosViewModel(empleadoService));
+            // setCoordinator inyecta el sessionManager
             controller.setCoordinator(this);
+            // setViewModel dispara inicialización de tabla y combos
+            controller.setViewModel(new EmpleadosViewModel());
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    /** Formulario de empleado */
-    public void openEmpleadoForm() {
-        if (!sessionManager.tienePermiso("GESTION_EMPLEADOS")) return;
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/EmpleadoFormview.fxml"));
-            AnchorPane view = loader.load();
-
-            EmpleadoFormController controller = loader.getController();
-            controller.setCoordinator(this);
-            mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Catálogo — HUB de navegación */
+    /** Catálogos
+     * CORRECCIÓN: CatalogoController no tiene setCoordinator ni init(service)
+     * — usa @FXML initialize() con su propio ViewModel interno.
+     * Solo se pasa el session para aplicar permisos. */
     public void openCatalogo() {
-        if (!sessionManager.tienePermiso("CATALOGO")) return;
+        if (!sessionManager.puedeVer("CATALOGO")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/CatalogosView.fxml"));
+            FXMLLoader loader = fxml("CatalogosView.fxml");
             AnchorPane view = loader.load();
-
             CatalogoController controller = loader.getController();
-            controller.setCoordinator(this);
-            controller.init(catalogoService); // ← inyección correcta
+            controller.setSession(sessionManager);
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    /** Localizaciones — por implementar */
+    /** Localizaciones
+     * CORRECCIÓN: LocalizacionesController no tiene setCoordinator,
+     * usa setSession() y setViewModel() con constructor vacío */
     public void openLocalizaciones() {
-        // TODO: cuando implementes LocalizacionesController
-//         if (!sessionManager.tienePermiso("LOCALIZACIONES")) return;
-//         FXMLLoader loader =LocalizacionesView.fxml
-//         LocalizacionesController controller = loader.getController();
-//         controller.setCoordinator(this);
-//         mainMenuController.setContent(view);
-        System.out.println("Localizaciones: módulo pendiente de implementar.");
-    }
-    public void openOrdenTrabajo() {
-        if (!sessionManager.tienePermiso("ORDEN_TRABAJO")) return;
+        if (!sessionManager.puedeVer("LOCALIZACIONES")) return;
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/gman/OrdenTrabajoView.fxml"));
+            FXMLLoader loader = fxml("LocalizacionesView.fxml");
             AnchorPane view = loader.load();
+            LocalizacionesController controller = loader.getController();
+            controller.setSession(sessionManager);
+            mainMenuController.setContent(view);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
 
+    /** Orden de Trabajo */
+    public void openOrdenTrabajo() {
+        if (!sessionManager.puedeVer("ORDEN_TRABAJO")) return;
+        try {
+            FXMLLoader loader = fxml("OrdenTrabajoView.fxml");
+            AnchorPane view = loader.load();
             OrdenTrabajoController controller = loader.getController();
             controller.setCoordinator(this);
             controller.setViewModel(new OrdenTrabajoViewModel(
                     ordenTrabajoService, empleadoService,
-                    equipoService, catalogoService));
+                    equipoService, catalogoService, localizacionesService));
             mainMenuController.setContent(view);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
+
+    /** Inventario */
+    public void openInventario() {
+        if (!sessionManager.puedeVer("INVENTARIO")) return;
+        try {
+            FXMLLoader loader = fxml("InventarioView.fxml");
+            AnchorPane view = loader.load();
+            // InventarioController aún no implementado
+            mainMenuController.setContent(view);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    /** Plan de Mantenimiento */
+    public void openPlanMantenimiento() {
+        if (!sessionManager.puedeVer("PLAN_MANTENIMIENTO")) return;
+        try {
+            FXMLLoader loader = fxml("PlanMantenimientoView.fxml");
+            AnchorPane view = loader.load();
+            // PlanMantenimientoController aún no implementado
+            mainMenuController.setContent(view);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    /** Histórico */
+    public void openHistorico() {
+        if (!sessionManager.puedeVer("HISTORICO")) return;
+        try {
+            FXMLLoader loader = fxml("HistoricoView.fxml");
+            AnchorPane view = loader.load();
+            // HistoricoController aún no implementado
+            mainMenuController.setContent(view);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    /** Reportes */
+    public void openReportes() {
+        if (!sessionManager.puedeVer("REPORTES")) return;
+        try {
+            FXMLLoader loader = fxml("ReportesView.fxml");
+            AnchorPane view = loader.load();
+            // ReportesController aún no implementado
+            mainMenuController.setContent(view);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
     // ════════════════════════════════════════════════════════════════
-    //  PLANTILLA — copia esto para cada módulo nuevo
+    //  HELPER
     // ════════════════════════════════════════════════════════════════
-    //
-    // public void openOrdenTrabajo() {
-    //     if (!sessionManager.tienePermiso("ORDEN_TRABAJO")) return;
-    //     try {
-    //         FXMLLoader loader = new FXMLLoader(
-    //                 getClass().getResource("/com/example/gman/OrdenTrabajoView.fxml"));
-    //         AnchorPane view = loader.load();
-    //         OrdenTrabajoController controller = loader.getController();
-    //         OrdenTrabajoViewModel vm = new OrdenTrabajoViewModel(
-    //                 ordenTrabajoService, empleadoService, equipoService);
-    //         controller.setViewModel(vm);
-    //         controller.setCoordinator(this);
-    //         mainMenuController.setContent(view);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
+    private FXMLLoader fxml(String nombre) {
+        var url = Thread.currentThread()
+                .getContextClassLoader()
+                .getResource("com/example/gman/" + nombre); // sin / al inicio
+        if (url == null)
+            throw new RuntimeException("FXML no encontrado: " + nombre);
+        return new FXMLLoader(url);
+    }
 }

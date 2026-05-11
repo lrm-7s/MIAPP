@@ -7,61 +7,42 @@ public class SessionManager {
 
     private Usuario currentUser;
 
-    // ─── Gestión de sesión ──────────────────────────────────────────
-    public void setCurrentUser(Usuario user) { this.currentUser = user; }
-    public Usuario getCurrentUser()          { return currentUser; }
+    // ─── Sesión ──────────────────────────────────────────────────────
+    public void setCurrentUser(Usuario user) { this.currentUser = user;    }
+    public Usuario getCurrentUser()          { return currentUser;         }
     public boolean isLoggedIn()              { return currentUser != null; }
-    public void clearSession()               { currentUser = null; }
+    public void clearSession()               { currentUser = null;         }
 
-    // ─── Acceso al rol ───────────────────────────────────────────────
-    public Rol getRol() {
-        return currentUser != null ? currentUser.getRol() : null;
-    }
+    // ─── Info ────────────────────────────────────────────────────────
+    public String getNombreUsuario() { return currentUser != null ? currentUser.getNombre()   : ""; }
+    public String getUsername()      { return currentUser != null ? currentUser.getUsername() : ""; }
+    public Rol    getRol()           { return currentUser != null ? currentUser.getRol()    : null; }
 
     public String getRolDisplayName() {
         if (currentUser == null) return "";
         Rol rol = currentUser.getRol();
         return rol != null ? rol.getDisplayName() : "";
     }
-
-    // ─── Info de sesión ──────────────────────────────────────────────
-    public String getNombreUsuario() { return currentUser != null ? currentUser.getNombre()   : ""; }
-    public String getUsername()      { return currentUser != null ? currentUser.getUsername() : ""; }
-
-    // ─── Control de permisos ────────────────────────────────────────
-
-    /** Acceso básico al módulo (ver) */
-    public boolean tienePermiso(String modulo) {
-        if (currentUser == null) return false;
-        return currentUser.tienePermiso(modulo);
-    }
-
-    /** ¿Puede ver el módulo? */
-    public boolean puedeVer(String modulo) {
-        if (currentUser == null) return false;
-        return getRol().puedeVer(modulo);
-    }
-
-    /** ¿Puede crear o editar en el módulo? */
-    public boolean puedeEditar(String modulo) {
-        if (currentUser == null) return false;
-        return getRol().puedeEditar(modulo);
-    }
-
-    /** ¿Puede eliminar en el módulo? */
-    public boolean puedeEliminar(String modulo) {
-        if (currentUser == null) return false;
-        return getRol().puedeEliminar(modulo);
-    }
-
-    /** ¿Es ADMIN? */
+    // ─── Permisos — delegan al usuario ───────────────────────────────
     public boolean esAdmin() {
-
-        if (currentUser == null) return false;
-        return Rol.ADMIN.equals(currentUser.getRol());
+        return currentUser != null && currentUser.esAdmin();
+    }
+    public boolean puedeVer(String modulo) {
+        return currentUser != null && currentUser.puedeVer(modulo);
     }
 
-    /** ¿Es SUPERVISOR o superior? */
+    public boolean puedeCrear(String modulo) {
+        return currentUser != null && currentUser.puedeCrear(modulo);
+    }
+
+    public boolean puedeEditar(String modulo) {
+        return currentUser != null && currentUser.puedeEditar(modulo);
+    }
+
+    public boolean puedeEliminar(String modulo) {
+        return currentUser != null && currentUser.puedeEliminar(modulo);
+    }
+
     public boolean esSupervisorOSuperior() {
         if (currentUser == null) return false;
         Rol rol = currentUser.getRol();

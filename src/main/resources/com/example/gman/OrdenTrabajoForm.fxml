@@ -107,7 +107,7 @@
 
                         <Label text="Estado del equipo" GridPane.rowIndex="2" GridPane.columnIndex="0"
                                style="-fx-font-weight: bold;"/>
-                        <TextField fx:id="tfEstadoEquipo" prefWidth="180"
+                        <ComboBox fx:id="cbEstadoEquipo" prefWidth="180"
                                    GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
                         <Label text="Fecha de vencimiento" GridPane.rowIndex="3" GridPane.columnIndex="0"

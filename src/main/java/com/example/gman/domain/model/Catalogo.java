@@ -1,55 +1,63 @@
 package com.example.gman.domain.model;
 
-import javafx.beans.property.*;
-
 /**
- * Modelo genérico para ítems de catálogo.
- * Cada sub-catálogo (Departamento, CodigoFalla, etc.) es un CatalogoItem.
+ * Modelo de dominio para la tabla catalogo.
+ * Representa cualquier valor parametrizable del sistema
+ * (departamentos, tipos de equipo, prioridades, etc.).
  */
 public class Catalogo {
 
-    private final IntegerProperty id     = new SimpleIntegerProperty();
-    private final StringProperty  tipo   = new SimpleStringProperty(); // "DEPARTAMENTO", "FALLA", etc.
-    private final StringProperty  codigo = new SimpleStringProperty();
-    private final StringProperty  nombre = new SimpleStringProperty();
-    private final StringProperty  descripcion = new SimpleStringProperty();
-
+    private int    id;
+    private String tipo;
+    private String codigo;
+    private String nombre;
+    private String descripcion;
+    // Constructor vacío
     public Catalogo() {}
 
-    public Catalogo(String tipo, String codigo, String nombre, String descripcion) {
-        this.tipo.set(tipo);
-        this.codigo.set(codigo);
-        this.nombre.set(nombre);
-        this.descripcion.set(descripcion);
+    // Constructor completo
+    public Catalogo(int id, String tipo, String codigo, String nombre, String descripcion) {
+        this.id          = id;
+        this.tipo        = tipo;
+        this.codigo      = codigo;
+        this.nombre      = nombre;
+        this.descripcion = descripcion;
     }
 
-    // ─── ID ──────────────────────────────────────────────────────────
-    public int getId()                  { return id.get(); }
-    public void setId(int v)            { id.set(v); }
-    public IntegerProperty idProperty() { return id; }
+    // ── Getters & Setters ────────────────────────────────────────────
 
-    // ─── Tipo ────────────────────────────────────────────────────────
-    public String getTipo()              { return tipo.get(); }
-    public void setTipo(String v)        { tipo.set(v); }
-    public StringProperty tipoProperty() { return tipo; }
+    public int    getId()          { return id; }
+    public void   setId(int id)    { this.id = id; }
 
-    // ─── Código ──────────────────────────────────────────────────────
-    public String getCodigo()              { return codigo.get(); }
-    public void setCodigo(String v)        { codigo.set(v); }
-    public StringProperty codigoProperty() { return codigo; }
+    public String getTipo()              { return tipo; }
+    public void   setTipo(String tipo)   { this.tipo = tipo; }
 
-    // ─── Nombre ──────────────────────────────────────────────────────
-    public String getNombre()              { return nombre.get(); }
-    public void setNombre(String v)        { nombre.set(v); }
-    public StringProperty nombreProperty() { return nombre; }
+    public String getCodigo()                { return codigo; }
+    public void   setCodigo(String codigo)   { this.codigo = codigo; }
 
-    // ─── Descripción ─────────────────────────────────────────────────
-    public String getDescripcion()              { return descripcion.get(); }
-    public void setDescripcion(String v)        { descripcion.set(v); }
-    public StringProperty descripcionProperty() { return descripcion; }
+    public String getNombre()                { return nombre; }
+    public void   setNombre(String nombre)   { this.nombre = nombre; }
 
+    public String getDescripcion()                   { return descripcion; }
+    public void   setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+    /**
+     * Representación usada por ComboBox cuando se muestra el objeto directamente.
+     */
     @Override
     public String toString() {
-        return "[" + tipo.get() + "] " + codigo.get() + " - " + nombre.get();
+        return nombre != null ? nombre : codigo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Catalogo)) return false;
+        return id == ((Catalogo) o).id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
     }
 }

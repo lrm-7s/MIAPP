@@ -2,75 +2,73 @@ package com.example.gman.application.service;
 
 import com.example.gman.domain.model.Empleado;
 import com.example.gman.domain.repository.EmpleadoRepository;
+import com.example.gman.infrastructure.repository.EmpleadoRepositoryImpl;
 
 import java.util.List;
 
 /**
- * Servicio de lógica de negocio para el módulo de Empleados.
- * Valida los datos antes de delegar al repositorio.
+ * Servicio de negocio para el módulo Empleados.
  */
 public class EmpleadoService {
 
     private final EmpleadoRepository repository;
 
+    public EmpleadoService() {
+        this.repository = new EmpleadoRepositoryImpl();
+    }
+
     public EmpleadoService(EmpleadoRepository repository) {
         this.repository = repository;
     }
 
-    // ─── Consultas ───────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  LECTURA
+    // ════════════════════════════════════════════════════════════════
 
-    public List<Empleado> getAllEmpleados() {
-        try {
-            return repository.getAllEmpleados();
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener empleados", e);
-        }
+    public List<Empleado> listarTodos() {
+        return repository.findAll();
     }
 
-    public Empleado findByNumero(int numeroEmpleado) throws Exception {
-        return repository.findByNumero(numeroEmpleado);
+    public List<Empleado> listarPorDepartamento(int departamentoId) {
+        return repository.findByDepartamento(departamentoId);
     }
 
-    // ─── Crear ───────────────────────────────────────────────────────
+    public Empleado buscarPorId(int numeroEmpleado) {
+        return repository.findById(numeroEmpleado);
+    }
 
-    public void crearEmpleado(Empleado empleado) throws Exception {
+    // ════════════════════════════════════════════════════════════════
+    //  ESCRITURA
+    // ════════════════════════════════════════════════════════════════
+
+    public void crear(Empleado empleado) {
         validar(empleado);
-        repository.addEmpleado(empleado);
+        repository.save(empleado);
     }
 
-    // ─── Actualizar ──────────────────────────────────────────────────
-
-    public void actualizarEmpleado(Empleado empleado) throws Exception {
+    public void actualizar(Empleado empleado) {
+        if (empleado.getNumeroEmpleado() <= 0)
+            throw new IllegalArgumentException("Número de empleado inválido.");
         validar(empleado);
-        repository.updateEmpleado(empleado);
+        repository.update(empleado);
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
-
-    public void eliminarEmpleado(int numeroEmpleado) throws Exception {
-        repository.deleteEmpleado(numeroEmpleado);
+    public void eliminar(int numeroEmpleado) {
+        if (numeroEmpleado <= 0)
+            throw new IllegalArgumentException("Número de empleado inválido.");
+        repository.delete(numeroEmpleado);
     }
 
-    // ─── Validación ──────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  VALIDACIONES
+    // ════════════════════════════════════════════════════════════════
 
     private void validar(Empleado e) {
         if (e.getNombre() == null || e.getNombre().isBlank())
-            throw new IllegalArgumentException("El nombre es obligatorio.");
-
-        if (e.getPosicion() == null || e.getPosicion().isBlank())
-            throw new IllegalArgumentException("La posición es obligatoria.");
-
-        if (e.getDepartamento() == null || e.getDepartamento().isBlank())
-            throw new IllegalArgumentException("El departamento es obligatorio.");
-
-        if (e.getCorreo() != null && !e.getCorreo().isBlank()
-                && !e.getCorreo().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))
-            throw new IllegalArgumentException("El correo electrónico no tiene formato válido.");
-
-        if (e.getSalarioPorHora() < 0)
-            throw new IllegalArgumentException("El salario por hora no puede ser negativo.");
-
-        if (e.getTiempoExtra1() < 0 || e.getTiempoExtra2() < 0 || e.getTiempoExtra3() < 0)
-            throw new IllegalArgumentException("Los factores de tiempo extra no pueden ser negativos.");
+            throw new IllegalArgumentException("El nombre del empleado es obligatorio.");
+        if (e.getPosicionId() <= 0)
+            throw new IllegalArgumentException("Debe seleccionar una posición.");
+        if (e.getDepartamentoId() <= 0)
+            throw new IllegalArgumentException("Debe seleccionar un departamento.");
     }
 }

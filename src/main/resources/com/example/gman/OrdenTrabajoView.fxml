@@ -11,13 +11,13 @@
           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
 
         <!-- HEADER -->
+
         <HBox styleClass="modulo-header" alignment="CENTER_LEFT" spacing="16">
             <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label text="Órdenes de Trabajo" styleClass="modulo-titulo"/>
                 <Label text="Gestione las órdenes de trabajo del sistema" styleClass="modulo-subtitulo"/>
             </VBox>
         </HBox>
-
         <!-- BARRA DE HERRAMIENTAS -->
         <HBox spacing="10" alignment="CENTER_LEFT"
               style="-fx-padding: 10 16 10 16; -fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">

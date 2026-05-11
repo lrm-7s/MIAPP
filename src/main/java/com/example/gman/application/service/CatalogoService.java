@@ -1,98 +1,88 @@
 package com.example.gman.application.service;
 
 import com.example.gman.domain.model.Catalogo;
-import com.example.gman.infrastructure.database.DatabaseHelper;
+import com.example.gman.domain.repository.CatalogoRepository;
+import com.example.gman.infrastructure.repository.CatalogoRepositoryImpl;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servicio de negocio para el módulo Catálogos.
+ * Centraliza toda la lógica de acceso y manipulación
+ * de la tabla catalogo y proveedores.
+ */
 public class CatalogoService {
 
-    // ─── Obtener todos ───────────────────────────────────────────────
-    public List<Catalogo> getAll() throws SQLException {
-        List<Catalogo> lista = new ArrayList<>();
-        String sql = "SELECT * FROM catalogo ORDER BY tipo, codigo";
+    private final CatalogoRepository repository;
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Catalogo c = new Catalogo();
-                c.setId(rs.getInt("id"));
-                c.setTipo(rs.getString("tipo"));
-                c.setCodigo(rs.getString("codigo"));
-                c.setNombre(rs.getString("nombre"));
-                c.setDescripcion(rs.getString("descripcion"));
-                lista.add(c);
-            }
-        }
-        return lista;
+    // Constructor por defecto — usa la implementación SQLite
+    public CatalogoService() {
+        this.repository = new CatalogoRepositoryImpl();
     }
 
-    // ─── Obtener por tipo ────────────────────────────────────────────
-    public List<Catalogo> getByTipo(String tipo) throws SQLException {
-        List<Catalogo> lista = new ArrayList<>();
-        String sql = "SELECT * FROM catalogo WHERE tipo = ? ORDER BY codigo";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, tipo);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Catalogo c = new Catalogo();
-                    c.setId(rs.getInt("id"));
-                    c.setTipo(rs.getString("tipo"));
-                    c.setCodigo(rs.getString("codigo"));
-                    c.setNombre(rs.getString("nombre"));
-                    c.setDescripcion(rs.getString("descripcion"));
-                    lista.add(c);
-                }
-            }
-        }
-        return lista;
+    // Constructor con inyección — útil para tests
+    public CatalogoService(CatalogoRepository repository) {
+        this.repository = repository;
     }
 
-    // ─── Crear ───────────────────────────────────────────────────────
-    public void crear(Catalogo c) throws SQLException {
-        String sql = "INSERT INTO catalogo (tipo, codigo, nombre, descripcion) VALUES (?, ?, ?, ?)";
+    // ════════════════════════════════════════════════════════════════
+    //  LECTURA
+    // ════════════════════════════════════════════════════════════════
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, c.getTipo());
-            ps.setString(2, c.getCodigo());
-            ps.setString(3, c.getNombre());
-            ps.setString(4, c.getDescripcion());
-            ps.executeUpdate();
-        }
+    public List<Catalogo> listarTodos() {
+        return repository.findAll();
     }
 
-    // ─── Actualizar ──────────────────────────────────────────────────
-    public void actualizar(Catalogo c) throws SQLException {
-        String sql = "UPDATE catalogo SET nombre=?, descripcion=? WHERE id=?";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, c.getNombre());
-            ps.setString(2, c.getDescripcion());
-            ps.setInt(3, c.getId());
-            ps.executeUpdate();
-        }
+    public List<Catalogo> listarPorTipo(String tipo) {
+        return repository.findByTipo(tipo.toUpperCase());
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
-    public void eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM catalogo WHERE id=?";
+    public Catalogo buscarPorId(int id) {
+        return repository.findById(id);
+    }
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    public Catalogo buscarPorCodigo(String codigo) {
+        return repository.findByCodigo(codigo.toUpperCase());
+    }
 
-            ps.setInt(1, id);
-            ps.executeUpdate();
+    /**
+     * Devuelve proveedores mapeados a Catalogo para reutilizar la TableView.
+     */
+    public List<Catalogo> listarProveedoresComoItems() {
+        return repository.findProveedoresComoItems();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  ESCRITURA
+    // ════════════════════════════════════════════════════════════════
+
+    public void crear(Catalogo catalogo) {
+        verificarCodigoUnico(catalogo.getCodigo(), -1);
+        repository.save(catalogo);
+    }
+
+    public void actualizar(Catalogo catalogo) {
+        verificarCodigoUnico(catalogo.getCodigo(), catalogo.getId());
+        repository.update(catalogo);
+    }
+
+    public void eliminar(int id) {
+        // El repositorio lanzará SQLException si hay FK activa
+        repository.delete(id);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  VALIDACIONES
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Verifica que el código no esté duplicado.
+     * @param excludeId  ID a excluir de la búsqueda (para edición). Pasar -1 en creación.
+     */
+    private void verificarCodigoUnico(String codigo, int excludeId) {
+        Catalogo existente = repository.findByCodigo(codigo);
+        if (existente != null && existente.getId() != excludeId) {
+            throw new IllegalStateException("Ya existe un registro con el código «" + codigo + "».");
         }
     }
 }

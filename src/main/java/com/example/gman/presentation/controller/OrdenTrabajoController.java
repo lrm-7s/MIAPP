@@ -2,44 +2,57 @@ package com.example.gman.presentation.controller;
 
 import com.example.gman.application.session.SessionManager;
 import com.example.gman.coordinator.AppCoordinator;
+import com.example.gman.domain.model.Catalogo;
 import com.example.gman.domain.model.OrdenTrabajo;
 import com.example.gman.presentation.viewmodel.OrdenTrabajoViewModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
+/**
+ * Correcciones:
+ *  - colTipo declarado y bindeado (faltaba en versión anterior)
+ *  - cbFiltroEstado declarado como ComboBox<Catalogo> y manejado en filtrarPorEstado()
+ *  - lblTotal declarado y actualizado
+ *  - inicializarTabla() usa campos *Nombre (display) para estado, tipo, prioridad
+ *  - filtrarPorEstado() llama viewModel.getByEstado(estadoId)
+ */
 public class OrdenTrabajoController {
 
-    // ─── Tabla principal ─────────────────────────────────────────────
-    @FXML private TableView<OrdenTrabajo>            tableOT;
-    @FXML private TableColumn<OrdenTrabajo, String>  colNumero;
-    @FXML private TableColumn<OrdenTrabajo, String>  colDescripcion;
-    @FXML private TableColumn<OrdenTrabajo, String>  colEstado;
-    @FXML private TableColumn<OrdenTrabajo, String>  colPrioridad;
-    @FXML private TableColumn<OrdenTrabajo, String>  colFecha;
-    @FXML private TableColumn<OrdenTrabajo, Void>    colAcciones;
+    // ── Tabla ─────────────────────────────────────────────────────────────
+    @FXML private TableView<OrdenTrabajo>           tableOT;
+    @FXML private TableColumn<OrdenTrabajo, String> colNumero;
+    @FXML private TableColumn<OrdenTrabajo, String> colTipo;          // faltaba bindeado
+    @FXML private TableColumn<OrdenTrabajo, String> colEstado;
+    @FXML private TableColumn<OrdenTrabajo, String> colDescripcion;
+    @FXML private TableColumn<OrdenTrabajo, String> colPrioridad;
+    @FXML private TableColumn<OrdenTrabajo, String> colFecha;
+    @FXML private TableColumn<OrdenTrabajo, Void>   colAcciones;
 
-    // ─── Botones del header ──────────────────────────────────────────
-    @FXML private Button btnNuevaOT;
-    @FXML private Button btnVerEditar;
-    @FXML private Button btnCerrarOT;
+    // ── Toolbar ───────────────────────────────────────────────────────────
+    @FXML private TextField              busquedaField;
+    @FXML private ComboBox<Catalogo>     cbFiltroEstado;     // antes sin declarar
+    @FXML private Button                 btnNuevaOT;
+    @FXML private Button                 btnVerEditar;
+    @FXML private Button                 btnCerrarOT;
 
-    // ─── Búsqueda ────────────────────────────────────────────────────
-    @FXML private TextField busquedaField;
-    @FXML private Label     mensajeLabel;
+    // ── Footer / mensajes ─────────────────────────────────────────────────
+    @FXML private Label                  mensajeLabel;
+    @FXML private Label                  lblTotal;           // antes sin declarar
 
-    // ─── Dependencias ────────────────────────────────────────────────
     private OrdenTrabajoViewModel viewModel;
     private AppCoordinator        coordinator;
     private SessionManager        sessionManager;
     private OrdenTrabajo          otSeleccionada;
 
-    // ─── Inyección ───────────────────────────────────────────────────
+    // ── Inyección ─────────────────────────────────────────────────────────
+
     public void setCoordinator(AppCoordinator coordinator) {
         this.coordinator    = coordinator;
         this.sessionManager = coordinator.getSessionManager();
@@ -53,84 +66,109 @@ public class OrdenTrabajoController {
             mostrarError("Error al cargar datos: " + e.getMessage());
         }
         inicializarTabla();
+        poblarFiltroEstado();
         aplicarPermisos();
+        actualizarTotal();
     }
 
-    // ─── Permisos ────────────────────────────────────────────────────
+    // ── Permisos ──────────────────────────────────────────────────────────
+
     private void aplicarPermisos() {
         if (sessionManager == null) return;
-
         boolean puedeEditar   = sessionManager.puedeEditar("ORDEN_TRABAJO");
         boolean puedeEliminar = sessionManager.puedeEliminar("ORDEN_TRABAJO");
 
-        // "Nueva OT" y "Cerrar OT" solo si puede editar
         btnNuevaOT.setVisible(puedeEditar);
         btnNuevaOT.setManaged(puedeEditar);
         btnCerrarOT.setVisible(puedeEditar);
         btnCerrarOT.setManaged(puedeEditar);
 
-        // "Ver/Editar" visible para todos (CONSULTOR solo puede ver)
         configurarColumnaAcciones(puedeEditar, puedeEliminar);
     }
 
-    // ─── Inicialización de tabla ─────────────────────────────────────
-    private void inicializarTabla() {
-        colNumero.setCellValueFactory(     d -> d.getValue().numeroOtProperty());
-        colDescripcion.setCellValueFactory(d -> d.getValue().descripcionProperty());
-        colEstado.setCellValueFactory(     d -> d.getValue().estadoProperty());
-        colPrioridad.setCellValueFactory(  d -> d.getValue().prioridadProperty());
-        colFecha.setCellValueFactory(      d -> d.getValue().fechaSolicitudProperty());
-        tableOT.setItems(viewModel.getOrdenes());
+    // ── Tabla ─────────────────────────────────────────────────────────────
 
-        // Selección de fila
+    private void inicializarTabla() {
+        // CORREGIDO: columnas usan campos *Nombre (display resuelto por JOIN)
+        colNumero.setCellValueFactory(     d -> d.getValue().numeroOtProperty());
+        colTipo.setCellValueFactory(       d -> d.getValue().tipoOtNombreProperty());
+        colEstado.setCellValueFactory(     d -> d.getValue().estadoNombreProperty());
+        colDescripcion.setCellValueFactory(d -> d.getValue().descripcionProperty());
+        colPrioridad.setCellValueFactory(  d -> d.getValue().prioridadNombreProperty());
+        colFecha.setCellValueFactory(      d -> d.getValue().fechaSolicitudProperty());
+
+        tableOT.setItems(viewModel.getOrdenes());
         tableOT.getSelectionModel().selectedItemProperty().addListener(
                 (obs, old, nuevo) -> otSeleccionada = nuevo);
     }
 
-    private void configurarColumnaAcciones(boolean puedeEditar,
-                                           boolean puedeEliminar) {
+    private void configurarColumnaAcciones(boolean puedeEditar, boolean puedeEliminar) {
         colAcciones.setCellFactory(col -> new TableCell<>() {
             private final Button btnEditar   = new Button("✏");
             private final Button btnEliminar = new Button("🗑");
             private final HBox   box         = new HBox(6);
-
             {
                 btnEditar.setTooltip(new Tooltip("Ver / Editar OT"));
                 btnEliminar.setTooltip(new Tooltip("Eliminar OT"));
                 btnEditar.getStyleClass().add("btn-accion-editar");
                 btnEliminar.getStyleClass().add("btn-accion-eliminar");
-
-                btnEditar.setOnAction(e -> {
-                    OrdenTrabajo ot = getTableView().getItems().get(getIndex());
-                    abrirFormulario(ot);
-                });
-                btnEliminar.setOnAction(e -> {
-                    OrdenTrabajo ot = getTableView().getItems().get(getIndex());
-                    confirmarEliminar(ot);
-                });
-
-                // El botón ver/editar siempre aparece
+                btnEditar.setOnAction(e -> abrirFormulario(
+                        getTableView().getItems().get(getIndex())));
+                btnEliminar.setOnAction(e -> confirmarEliminar(
+                        getTableView().getItems().get(getIndex())));
                 box.getChildren().add(btnEditar);
                 if (puedeEliminar) box.getChildren().add(btnEliminar);
             }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
+            @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : box);
             }
         });
     }
 
-    // ─── Filtro ──────────────────────────────────────────────────────
+    // ── Filtro estado ─────────────────────────────────────────────────────
+
+    private void poblarFiltroEstado() {
+        cbFiltroEstado.setConverter(new StringConverter<>() {
+            @Override public String toString(Catalogo c) {
+                return c == null ? "Todos los estados" : c.getNombre();
+            }
+            @Override public Catalogo fromString(String s) { return null; }
+        });
+        // Agregar opción "Todos" como null al inicio
+        cbFiltroEstado.getItems().add(null);
+        cbFiltroEstado.getItems().addAll(viewModel.getEstadosOt());
+        cbFiltroEstado.setValue(null);
+    }
+
+    @FXML
+    private void filtrarPorEstado() {
+        Catalogo selEstado = cbFiltroEstado.getValue();
+        try {
+            if (selEstado == null) {
+                tableOT.setItems(viewModel.getOrdenes());
+            } else {
+                tableOT.setItems(javafx.collections.FXCollections.observableArrayList(
+                        viewModel.getOrdenes().filtered(
+                                ot -> ot.getEstadoId() == selEstado.getId())));
+            }
+            actualizarTotal();
+        } catch (Exception e) {
+            mostrarError("Error al filtrar: " + e.getMessage());
+        }
+    }
+
+    // ── Búsqueda texto ────────────────────────────────────────────────────
+
     @FXML
     private void filtrarOrdenes() {
         tableOT.setItems(viewModel.filtrar(busquedaField.getText()));
+        actualizarTotal();
     }
 
-    // ─── Botón: Nueva OT ─────────────────────────────────────────────
-    @FXML
-    private void nuevaOT() {
+    // ── Botones ───────────────────────────────────────────────────────────
+
+    @FXML private void nuevaOT() {
         if (!sessionManager.puedeEditar("ORDEN_TRABAJO")) {
             mostrarError("No tienes permiso para crear órdenes de trabajo.");
             return;
@@ -138,9 +176,7 @@ public class OrdenTrabajoController {
         abrirFormulario(null);
     }
 
-    // ─── Botón: Ver/Editar OT seleccionada ───────────────────────────
-    @FXML
-    private void verEditarOT() {
+    @FXML private void verEditarOT() {
         if (otSeleccionada == null) {
             mostrarError("Selecciona una OT de la tabla primero.");
             return;
@@ -148,9 +184,7 @@ public class OrdenTrabajoController {
         abrirFormulario(otSeleccionada);
     }
 
-    // ─── Botón: Cerrar OT seleccionada ───────────────────────────────
-    @FXML
-    private void cerrarOT() {
+    @FXML private void cerrarOT() {
         if (!sessionManager.puedeEditar("ORDEN_TRABAJO")) {
             mostrarError("No tienes permiso para cerrar órdenes.");
             return;
@@ -159,62 +193,61 @@ public class OrdenTrabajoController {
             mostrarError("Selecciona una OT de la tabla primero.");
             return;
         }
-        if ("CERRADA".equals(otSeleccionada.getEstado())) {
+        // Verificar si ya está cerrada por nombre resuelto
+        String estadoNombre = otSeleccionada.getEstadoNombre();
+        if (estadoNombre != null && estadoNombre.equalsIgnoreCase("Cerrada")) {
             mostrarError("Esta OT ya está cerrada.");
             return;
         }
         abrirCierre(otSeleccionada);
     }
 
-    // ─── Abrir formulario (nueva o edición) ──────────────────────────
+    // ── Formulario ────────────────────────────────────────────────────────
+
     private void abrirFormulario(OrdenTrabajo ot) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/gman/OrdenTrabajoForm.fxml"));
-            VBox root = loader.load();
-
+           AnchorPane root = loader.load();
             OrdenTrabajoFormController ctrl = loader.getController();
             ctrl.setViewModel(viewModel);
             ctrl.setSessionManager(sessionManager);
-            ctrl.cargar(ot); // null = nuevo, objeto = edición
-
+            ctrl.cargar(ot);
             Stage stage = new Stage();
             stage.setTitle(ot == null ? "Nueva Orden de Trabajo" : "Editar OT");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.showAndWait();
-
-            viewModel.cargarOrdenes(); // refresca tabla al cerrar
+            viewModel.cargarOrdenes();
+            actualizarTotal();
         } catch (Exception e) {
             mostrarError("Error al abrir formulario: " + e.getMessage());
         }
     }
 
-    // ─── Abrir cierre ────────────────────────────────────────────────
     private void abrirCierre(OrdenTrabajo ot) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/com/example/gman/OrdenTrabajoCierre.fxml"));
-            VBox root = loader.load();
-
+            AnchorPane root = loader.load();
             OrdenTrabajoCierreController ctrl = loader.getController();
             ctrl.setViewModel(viewModel);
             ctrl.setSessionManager(sessionManager);
             ctrl.cargar(ot);
-
             Stage stage = new Stage();
-            stage.setTitle("Cierre de OT - " + ot.getNumeroOt());
+            stage.setTitle("Cierre de OT — " + ot.getNumeroOt());
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.showAndWait();
-
             viewModel.cargarOrdenes();
+            actualizarTotal();
         } catch (Exception e) {
             mostrarError("Error al abrir cierre: " + e.getMessage());
         }
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
+    // ── Eliminar ──────────────────────────────────────────────────────────
+
     private void confirmarEliminar(OrdenTrabajo ot) {
         if (!sessionManager.puedeEliminar("ORDEN_TRABAJO")) {
             mostrarError("No tienes permiso para eliminar órdenes.");
@@ -229,6 +262,7 @@ public class OrdenTrabajoController {
                 try {
                     viewModel.eliminar(ot.getId());
                     mostrarExito("OT eliminada correctamente.");
+                    actualizarTotal();
                 } catch (Exception e) {
                     mostrarError("Error al eliminar: " + e.getMessage());
                 }
@@ -236,7 +270,13 @@ public class OrdenTrabajoController {
         });
     }
 
-    // ─── Helpers UI ──────────────────────────────────────────────────
+    // ── Helpers UI ────────────────────────────────────────────────────────
+
+    private void actualizarTotal() {
+        if (lblTotal != null && tableOT != null)
+            lblTotal.setText("Total: " + tableOT.getItems().size() + " órdenes");
+    }
+
     private void mostrarError(String msg) {
         if (mensajeLabel == null) return;
         mensajeLabel.setText("⚠ " + msg);
@@ -244,6 +284,7 @@ public class OrdenTrabajoController {
         if (!mensajeLabel.getStyleClass().contains("mensaje-error"))
             mensajeLabel.getStyleClass().add("mensaje-error");
         mensajeLabel.setVisible(true);
+        mensajeLabel.setManaged(true);
     }
 
     private void mostrarExito(String msg) {
@@ -253,5 +294,6 @@ public class OrdenTrabajoController {
         if (!mensajeLabel.getStyleClass().contains("mensaje-exito"))
             mensajeLabel.getStyleClass().add("mensaje-exito");
         mensajeLabel.setVisible(true);
+        mensajeLabel.setManaged(true);
     }
 }

@@ -2,87 +2,144 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="600" prefWidth="900"
-            xmlns="http://javafx.com/javafx/16"
+<AnchorPane xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.gman.presentation.controller.LocalizacionesController">
+            fx:controller="com.example.gman.presentation.controller.LocalizacionesController"
+            styleClass="content-area">
 
-    <VBox AnchorPane.topAnchor="0"
-          AnchorPane.bottomAnchor="0"
-          AnchorPane.leftAnchor="0"
-          AnchorPane.rightAnchor="0"
-          spacing="0">
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
+          spacing="0"
+    >
 
-        <!-- HEADER -->
-        <HBox styleClass="modulo-header"
-              alignment="CENTER_LEFT"
-              spacing="16">
-
-            <VBox spacing="4" HBox.hgrow="ALWAYS">
-
-                <Label text="Gestión de Localizaciones"
-                       styleClass="modulo-titulo"/>
-
-                <Label text="Administre las localizaciones del sistema"
+        <!-- ── HEADER ─────────────────────────────────────────────── -->
+        <HBox styleClass="modulo-header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+            <Label text="📍" styleClass="modulo-icono"/>
+            <VBox spacing="2">
+                <Label text="Localizaciones" styleClass="modulo-titulo" />
+                <Label text="Gestión de ubicaciones físicas de la planta"
                        styleClass="modulo-subtitulo"/>
-
             </VBox>
-
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnAgregar" text="+ Agregar Localización"
+                    styleClass="btn-primario" onAction="#abrirFormAgregar"/>
         </HBox>
 
-        <!-- CUERPO -->
-        <VBox styleClass="modulo-body"
-              spacing="10"
-              VBox.vgrow="ALWAYS">
+        <Separator/>
 
-            <VBox fx:id="panelFormulario"
-                  spacing="14"
-                  VBox.vgrow="ALWAYS">
+        <!-- ── BARRA DE BÚSQUEDA ──────────────────────────────────── -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="search-bar">
+            <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+            <Label text="Buscar:" styleClass="modulo-subtitulo"/>
+            <TextField fx:id="txtBuscar" promptText="Número o descripción..."
+                       prefWidth="260" styleClass="form-field"
+                       onKeyReleased="#filtrar"/>
+            <Label text="Departamento:" styleClass="modulo-subtitulo"/>
+            <ComboBox fx:id="cmbFiltroDept" promptText="Todos"
+                      prefWidth="180" onAction="#filtrar"/>
+            <Button text="✕ Limpiar" styleClass="btn-secondary" onAction="#limpiarFiltros"/>
+        </HBox>
 
-                <Label fx:id="lblTituloForm"
-                       text="Listado de Localizaciones"
-                       style="-fx-font-size: 18px; -fx-font-weight: bold;"
-                       styleClass="texto-logo"/>
+        <Separator/>
 
-                <!-- TABLA -->
-                <TableView fx:id="tablaLocalizaciones" VBox.vgrow="ALWAYS">
-
-                    <columns>
-
-                        <TableColumn fx:id="colNumero"
-                                     text="N° Localización"
-                                     prefWidth="150"/>
-
-                        <TableColumn fx:id="colDescripcion"
-                                     text="Descripción"
-                                     prefWidth="300"/>
-
-                        <TableColumn fx:id="colDepartamento"
-                                     text="Departamento"
-                                     prefWidth="200"/>
-
-                    </columns>
-
-                </TableView>
-
-                <!-- BOTONES OPCIONALES -->
-                <HBox spacing="10">
-                    <Button text="Nuevo" fx:id="btnNuevo"/>
-                    <Button text="Editar" fx:id="btnEditar"/>
-                    <Button text="Eliminar" fx:id="btnEliminar"/>
-                </HBox>
-
-            </VBox>
-
-        </VBox>
+        <!-- ── TABLA ──────────────────────────────────────────────── -->
+        <TableView fx:id="tablaLocalizaciones" VBox.vgrow="ALWAYS"
+                   styleClass="tabla-gman"
+        >
+            <columns>
+                <TableColumn fx:id="colNumero"      text="N° Localización" prefWidth="160"/>
+                <TableColumn fx:id="colDescripcion" text="Descripción"     prefWidth="260"/>
+                <TableColumn fx:id="colDepartamento" text="Departamento"   prefWidth="180"/>
+                <TableColumn fx:id="colNotas"       text="Notas"           prefWidth="220"/>
+                <TableColumn fx:id="colAcciones"    text="Acciones"        prefWidth="140"/>
+            </columns>
+        </TableView>
 
     </VBox>
 
-    <!-- FOOTER -->
-    <Label text="GMAN"
-           style="-fx-font-size: 18px; -fx-font-weight: bold;"
-           AnchorPane.bottomAnchor="10"
-           AnchorPane.rightAnchor="10"/>
+    <!-- ══════════════════════════════════════════════════════════
+         FORMULARIO OVERLAY — Agregar / Editar
+    ══════════════════════════════════════════════════════════ -->
+    <StackPane fx:id="overlayForm" visible="false" managed="false"
+               styleClass="overlay-backdrop"
+               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <VBox styleClass="form-card" maxWidth="460" spacing="16">
+            <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+            <Label fx:id="lblFormTitulo" text="Agregar Localización"
+                   styleClass="form-title"/>
+            <Separator/>
+
+            <GridPane hgap="12" vgap="14">
+                <padding><Insets top="8"/></padding>
+
+                <!-- N° Localización -->
+                <Label text="N° Localización *" styleClass="form-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="txtNumero" promptText="Ej. LOC-04"
+                           prefWidth="240" styleClass="form-field"
+                           GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <!-- Descripción -->
+                <Label text="Descripción *" styleClass="form-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="txtDescripcion" promptText="Nombre o descripción del lugar"
+                           prefWidth="240" styleClass="form-field"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <!-- Departamento (combo desde catálogo) -->
+                <Label text="Departamento" styleClass="form-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <ComboBox fx:id="cmbDepartamento" promptText="Seleccionar departamento"
+                          prefWidth="240"
+                          GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <!-- Notas -->
+                <Label text="Notas" styleClass="form-label"
+                       GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <TextArea fx:id="txtNotas" promptText="Observaciones opcionales"
+                          prefWidth="240" prefHeight="80" wrapText="true"
+                          styleClass="form-field"
+                          GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+            </GridPane>
+
+            <Label fx:id="lblError" text="" styleClass="form-error" wrapText="true"/>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancelar" styleClass="btn-secondary" onAction="#cerrarForm"/>
+                <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                        onAction="#guardarRegistro"/>
+            </HBox>
+        </VBox>
+
+    </StackPane>
+
+    <!-- ══════════════════════════════════════════════════════════
+         DIÁLOGO CONFIRMAR ELIMINACIÓN
+    ══════════════════════════════════════════════════════════ -->
+    <StackPane fx:id="overlayConfirmar" visible="false" managed="false"
+               styleClass="overlay-backdrop"
+               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <VBox styleClass="form-card" maxWidth="360" spacing="16" alignment="CENTER">
+            <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+            <Label text="⚠ Eliminar localización" styleClass="form-title"/>
+            <Label fx:id="lblConfirmarMsg"
+                   text="¿Seguro que desea eliminar esta localización?"
+                   styleClass="form-label" wrapText="true" textAlignment="CENTER"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Cancelar" styleClass="btn-secondary" onAction="#cerrarConfirmar"/>
+                <Button text="Eliminar" styleClass="btn-danger"    onAction="#confirmarEliminar"/>
+            </HBox>
+        </VBox>
+
+    </StackPane>
 
 </AnchorPane>

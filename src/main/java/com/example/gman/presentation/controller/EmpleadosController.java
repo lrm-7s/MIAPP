@@ -2,8 +2,12 @@ package com.example.gman.presentation.controller;
 
 import com.example.gman.application.session.SessionManager;
 import com.example.gman.coordinator.AppCoordinator;
+import com.example.gman.domain.model.Catalogo;
 import com.example.gman.domain.model.Empleado;
+import com.example.gman.domain.model.Localizacion;
 import com.example.gman.presentation.viewmodel.EmpleadosViewModel;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -13,90 +17,129 @@ import javafx.util.Callback;
 
 public class EmpleadosController {
 
-    // ─── Tabla ───────────────────────────────────────────────────────
-    @FXML private TableView<Empleado>            empleadosTable;
+    // ── Tabla y búsqueda ─────────────────────────────────────────────
+    @FXML private Button                     btnNuevo;
+    @FXML private TextField                  busquedaField;
+    @FXML private TableView<Empleado>        empleadosTable;
     @FXML private TableColumn<Empleado, Integer> colNumero;
     @FXML private TableColumn<Empleado, String>  colNombre;
     @FXML private TableColumn<Empleado, String>  colPosicion;
     @FXML private TableColumn<Empleado, String>  colDepartamento;
     @FXML private TableColumn<Empleado, String>  colCorreo;
     @FXML private TableColumn<Empleado, Void>    colAcciones;
-    @FXML private TextField                      busquedaField;
-    @FXML private Label                          mensajeLabel;
+    @FXML private Label                      mensajeLabel;
 
-    // ─── Botón principal ─────────────────────────────────────────────
-    @FXML private Button btnNuevo; // botón "Nuevo Empleado" en el header
+    // ── Overlay formulario ───────────────────────────────────────────
+    @FXML private StackPane          overlayPane;
+    @FXML private Label              dialogoTitulo;
+    @FXML private TextField          fNumero;
+    @FXML private TextField          fNombre;
+    @FXML private TextField          fDireccion;
+    @FXML private ComboBox<Catalogo>     cmbPosicion;
+    @FXML private ComboBox<Catalogo>     cmbDepartamento;
+    @FXML private ComboBox<Localizacion> cmbLocalizacion;
+    @FXML private TextField          fCelular;
+    @FXML private TextField          fCorreo;
+    @FXML private TextField          fSalario;
+    @FXML private TextField          fExtra1;
+    @FXML private TextField          fExtra2;
+    @FXML private TextField          fExtra3;
+    @FXML private Label              lblError;
 
-    // ─── Overlay ─────────────────────────────────────────────────────
-    @FXML private StackPane overlayPane;
-    @FXML private Label     dialogoTitulo;
+    // ── Overlay confirmar eliminación ────────────────────────────────
+    @FXML private StackPane overlayConfirmar;
+    @FXML private Label     lblConfirmarMsg;
 
-    // ─── Campos del formulario ────────────────────────────────────────
-    @FXML private TextField fNumero;
-    @FXML private TextField fNombre;
-    @FXML private TextField fDireccion;
-    @FXML private TextField fPosicion;
-    @FXML private TextField fCelular;
-    @FXML private TextField fDepartamento;
-    @FXML private TextField fCorreo;
-    @FXML private TextField fSalario;
-    @FXML private TextField fExtra1;
-    @FXML private TextField fExtra2;
-    @FXML private TextField fExtra3;
-
-    // ─── Dependencias ────────────────────────────────────────────────
+    // ── Dependencias y estado ────────────────────────────────────────
     private EmpleadosViewModel viewModel;
     private AppCoordinator     coordinator;
-    private SessionManager     sessionManager; // ← NUEVO
+    private SessionManager     sessionManager;
     private boolean            modoEdicion = false;
+    private Empleado           empleadoEditando;
+    private Empleado           empleadoAEliminar;
 
-    // ─── Inyección ───────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  INYECCIÓN
+    // ════════════════════════════════════════════════════════════════
+
     public void setCoordinator(AppCoordinator coordinator) {
-        this.coordinator    = coordinator;
+        this.coordinator  = coordinator;
         this.sessionManager = coordinator.getSessionManager();
     }
 
     public void setViewModel(EmpleadosViewModel viewModel) {
         this.viewModel = viewModel;
         inicializarTabla();
+        cargarCombos();
         cargarDatos();
-        aplicarPermisos(); // ← se aplica después de tener sessionManager
+        aplicarPermisos();
     }
 
-    // ─── Permisos ────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  PERMISOS
+    // ════════════════════════════════════════════════════════════════
+
     private void aplicarPermisos() {
         if (sessionManager == null) return;
 
-        boolean puedeEditar   = sessionManager.puedeEditar("GESTION_EMPLEADOS");
-        boolean puedeEliminar = sessionManager.puedeEliminar("GESTION_EMPLEADOS");
+        boolean puedeCrear    = sessionManager.tienePermiso("MANO_OBRA");
+        boolean puedeEditar   = sessionManager.tienePermiso("MANO_OBRA");
+        boolean puedeEliminar = sessionManager.tienePermiso("MANO_OBRA");
 
-        // Ocultar botón "Nuevo" si no puede editar
-        if (btnNuevo != null) {
-            btnNuevo.setVisible(puedeEditar);
-            btnNuevo.setManaged(puedeEditar);
-        }
-
-        // Reconfigurar columna acciones según permisos
+        btnNuevo.setVisible(puedeCrear);
+        btnNuevo.setManaged(puedeCrear);
         colAcciones.setCellFactory(crearCeldaAcciones(puedeEditar, puedeEliminar));
     }
 
-    // ─── Inicialización ──────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  INICIALIZACIÓN DE TABLA
+    // ════════════════════════════════════════════════════════════════
+
     private void inicializarTabla() {
         colNumero.setCellValueFactory(d ->
                 d.getValue().numeroEmpleadoProperty().asObject());
         colNombre.setCellValueFactory(d ->
                 d.getValue().nombreProperty());
         colPosicion.setCellValueFactory(d ->
-                d.getValue().posicionProperty());
+                d.getValue().posicionNombreProperty());
         colDepartamento.setCellValueFactory(d ->
-                d.getValue().departamentoProperty());
+                d.getValue().departamentoNombreProperty());
         colCorreo.setCellValueFactory(d ->
                 d.getValue().correoProperty());
 
-        // Columna acciones por defecto sin permisos aún
         colAcciones.setCellFactory(crearCeldaAcciones(true, true));
         empleadosTable.setItems(viewModel.getEmpleados());
     }
+
+    // ════════════════════════════════════════════════════════════════
+    //  COMBOS
+    // ════════════════════════════════════════════════════════════════
+
+    private void cargarCombos() {
+        // Posiciones
+        ObservableList<Catalogo> posiciones = FXCollections.observableArrayList(
+                viewModel.listarPosiciones());
+        cmbPosicion.setItems(posiciones);
+
+        // Departamentos
+        ObservableList<Catalogo> departamentos = FXCollections.observableArrayList(
+                viewModel.listarDepartamentos());
+        cmbDepartamento.setItems(departamentos);
+
+        // Localizaciones — agregar opción vacía al inicio
+        ObservableList<Localizacion> locs = FXCollections.observableArrayList();
+        Localizacion sinLoc = new Localizacion();
+        sinLoc.setId(0);
+        sinLoc.setDescripcion("— Sin localización —");
+        locs.add(sinLoc);
+        locs.addAll(viewModel.listarLocalizaciones());
+        cmbLocalizacion.setItems(locs);
+        cmbLocalizacion.getSelectionModel().selectFirst();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  CARGA DE DATOS
+    // ════════════════════════════════════════════════════════════════
 
     private void cargarDatos() {
         try {
@@ -107,53 +150,52 @@ public class EmpleadosController {
         }
     }
 
-    // ─── Filtro ──────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  FILTRO
+    // ════════════════════════════════════════════════════════════════
+
     @FXML
     private void filtrarEmpleados() {
         empleadosTable.setItems(viewModel.filtrar(busquedaField.getText()));
     }
 
-    // ─── Overlay — Nuevo ─────────────────────────────────────────────
+    @FXML
+    private void limpiarBusqueda() {
+        busquedaField.clear();
+        empleadosTable.setItems(viewModel.getEmpleados());
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  FORMULARIO — ABRIR
+    // ════════════════════════════════════════════════════════════════
+
     @FXML
     private void abrirNuevo() {
-        if (sessionManager != null && !sessionManager.puedeEditar("GESTION_EMPLEADOS")) {
-            mostrarError("No tienes permiso para agregar empleados.");
-            return;
-        }
-        modoEdicion = false;
+        modoEdicion      = false;
+        empleadoEditando = null;
         dialogoTitulo.setText("Nuevo Empleado");
         limpiarFormulario();
-        fNumero.setPromptText("(auto)");
         overlayPane.setVisible(true);
     }
 
-    // ─── Overlay — Editar ────────────────────────────────────────────
     private void abrirEdicion(Empleado e) {
-        if (sessionManager != null && !sessionManager.puedeEditar("GESTION_EMPLEADOS")) {
-            mostrarError("No tienes permiso para editar empleados.");
-            return;
-        }
-        modoEdicion = true;
+        modoEdicion      = true;
+        empleadoEditando = e;
         dialogoTitulo.setText("Editar Empleado");
         poblarFormulario(e);
         overlayPane.setVisible(true);
     }
 
-    @FXML
-    private void cerrarDialogo() {
-        overlayPane.setVisible(false);
-        ocultarMensaje();
-    }
+    // ════════════════════════════════════════════════════════════════
+    //  FORMULARIO — GUARDAR
+    // ════════════════════════════════════════════════════════════════
 
     @FXML
     private void guardar() {
-        if (sessionManager != null && !sessionManager.puedeEditar("GESTION_EMPLEADOS")) {
-            mostrarError("No tienes permiso para guardar cambios.");
-            return;
-        }
         try {
             Empleado e = leerFormulario();
             if (modoEdicion) {
+                e.setNumeroEmpleado(empleadoEditando.getNumeroEmpleado());
                 viewModel.actualizarEmpleado(e);
                 mostrarExito("Empleado actualizado correctamente.");
             } else {
@@ -163,58 +205,70 @@ public class EmpleadosController {
             cerrarDialogo();
             cargarDatos();
         } catch (IllegalArgumentException ex) {
-            mostrarError(ex.getMessage());
+            lblError.setText(ex.getMessage());
         } catch (Exception ex) {
-            mostrarError("Error: " + ex.getMessage());
+            lblError.setText("Error: " + ex.getMessage());
         }
     }
 
-    // ─── Eliminación ─────────────────────────────────────────────────
-    private void confirmarEliminacion(Empleado e) {
-        if (sessionManager != null && !sessionManager.puedeEliminar("GESTION_EMPLEADOS")) {
-            mostrarError("No tienes permiso para eliminar empleados.");
-            return;
-        }
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar eliminación");
-        alert.setHeaderText("¿Eliminar empleado?");
-        alert.setContentText(
-                "¿Está seguro de que desea eliminar a '" + e.getNombre()
-                        + "' (#" + e.getNumeroEmpleado() + ")?\n"
-                        + "Esta acción no se puede deshacer."
-        );
-        alert.showAndWait().ifPresent(r -> {
-            if (r == ButtonType.OK) {
-                try {
-                    viewModel.eliminarEmpleado(e.getNumeroEmpleado());
-                    cargarDatos();
-                    mostrarExito("Empleado eliminado correctamente.");
-                } catch (Exception ex) {
-                    mostrarError("Error al eliminar: " + ex.getMessage());
-                }
-            }
-        });
+    @FXML
+    private void cerrarDialogo() {
+        overlayPane.setVisible(false);
+        limpiarFormulario();
+        ocultarMensaje();
     }
 
-    // ─── Celda de acciones con permisos ──────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  ELIMINACIÓN
+    // ════════════════════════════════════════════════════════════════
+
+    private void pedirConfirmacion(Empleado e) {
+        empleadoAEliminar = e;
+        lblConfirmarMsg.setText(
+                "¿Seguro que desea eliminar a «" + e.getNombre()
+                        + "» (#" + e.getNumeroEmpleado() + ")?\n"
+                        + "Esta acción no se puede deshacer.");
+        overlayConfirmar.setVisible(true);
+    }
+
+    @FXML
+    private void confirmarEliminar() {
+        if (empleadoAEliminar == null) return;
+        try {
+            viewModel.eliminarEmpleado(empleadoAEliminar.getNumeroEmpleado());
+            cerrarConfirmar();
+            cargarDatos();
+            mostrarExito("Empleado eliminado correctamente.");
+        } catch (Exception ex) {
+            cerrarConfirmar();
+            mostrarError("Error al eliminar: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void cerrarConfirmar() {
+        empleadoAEliminar = null;
+        overlayConfirmar.setVisible(false);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  CELDA DE ACCIONES
+    // ════════════════════════════════════════════════════════════════
+
     private Callback<TableColumn<Empleado, Void>, TableCell<Empleado, Void>>
     crearCeldaAcciones(boolean puedeEditar, boolean puedeEliminar) {
         return col -> new TableCell<>() {
-
             private final Button btnEditar   = new Button("✏ Editar");
             private final Button btnEliminar = new Button("🗑 Eliminar");
             private final HBox   box         = new HBox(6);
 
             {
-                btnEditar.getStyleClass().add("btn-accion-editar");
-                btnEliminar.getStyleClass().add("btn-accion-eliminar");
-
+                btnEditar.getStyleClass().add("btn-tabla-editar");
+                btnEliminar.getStyleClass().add("btn-tabla-eliminar");
                 btnEditar.setOnAction(e ->
                         abrirEdicion(getTableView().getItems().get(getIndex())));
                 btnEliminar.setOnAction(e ->
-                        confirmarEliminacion(getTableView().getItems().get(getIndex())));
-
-                // Solo agrega botones permitidos
+                        pedirConfirmacion(getTableView().getItems().get(getIndex())));
                 if (puedeEditar)   box.getChildren().add(btnEditar);
                 if (puedeEliminar) box.getChildren().add(btnEliminar);
                 box.setAlignment(Pos.CENTER);
@@ -228,42 +282,90 @@ public class EmpleadosController {
         };
     }
 
-    // ─── Helpers de formulario ────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  HELPERS DE FORMULARIO
+    // ════════════════════════════════════════════════════════════════
+
     private void limpiarFormulario() {
-        fNumero.clear(); fNombre.clear();     fDireccion.clear();
-        fPosicion.clear(); fCelular.clear(); fDepartamento.clear();
-        fCorreo.clear(); fSalario.clear();
-        fExtra1.clear(); fExtra2.clear();    fExtra3.clear();
+        fNumero.clear();
+        fNombre.clear();
+        fDireccion.clear();
+        fCelular.clear();
+        fCorreo.clear();
+        fSalario.clear();
+        fExtra1.clear();
+        fExtra2.clear();
+        fExtra3.clear();
+        cmbPosicion.getSelectionModel().clearSelection();
+        cmbDepartamento.getSelectionModel().clearSelection();
+        cmbLocalizacion.getSelectionModel().selectFirst();
+        lblError.setText("");
     }
 
     private void poblarFormulario(Empleado e) {
         fNumero.setText(String.valueOf(e.getNumeroEmpleado()));
         fNombre.setText(e.getNombre());
-        fDireccion.setText(e.getDireccion());
-        fPosicion.setText(e.getPosicion());
-        fCelular.setText(e.getCelular());
-        fDepartamento.setText(e.getDepartamento());
-        fCorreo.setText(e.getCorreo());
-        fSalario.setText(String.valueOf(e.getSalarioPorHora()));
-        fExtra1.setText(String.valueOf(e.getTiempoExtra1()));
-        fExtra2.setText(String.valueOf(e.getTiempoExtra2()));
-        fExtra3.setText(String.valueOf(e.getTiempoExtra3()));
+        fDireccion.setText(e.getDireccion() != null ? e.getDireccion() : "");
+        fCelular.setText(e.getCelular() != null ? e.getCelular() : "");
+        fCorreo.setText(e.getCorreo() != null ? e.getCorreo() : "");
+        fSalario.setText(e.getSalarioPorHora() > 0 ? String.valueOf(e.getSalarioPorHora()) : "");
+        fExtra1.setText(e.getTiempoExtra1() > 0 ? String.valueOf(e.getTiempoExtra1()) : "");
+        fExtra2.setText(e.getTiempoExtra2() > 0 ? String.valueOf(e.getTiempoExtra2()) : "");
+        fExtra3.setText(e.getTiempoExtra3() > 0 ? String.valueOf(e.getTiempoExtra3()) : "");
+
+        // Seleccionar posición
+        cmbPosicion.getItems().stream()
+                .filter(c -> c.getId() == e.getPosicionId())
+                .findFirst()
+                .ifPresent(c -> cmbPosicion.getSelectionModel().select(c));
+
+        // Seleccionar departamento
+        cmbDepartamento.getItems().stream()
+                .filter(c -> c.getId() == e.getDepartamentoId())
+                .findFirst()
+                .ifPresent(c -> cmbDepartamento.getSelectionModel().select(c));
+
+        // Seleccionar localización
+        cmbLocalizacion.getItems().stream()
+                .filter(l -> l.getId() == e.getLocalizacionId())
+                .findFirst()
+                .ifPresentOrElse(
+                        l -> cmbLocalizacion.getSelectionModel().select(l),
+                        () -> cmbLocalizacion.getSelectionModel().selectFirst());
+
+        lblError.setText("");
     }
 
     private Empleado leerFormulario() {
         Empleado e = new Empleado();
-        if (modoEdicion)
-            e.setNumeroEmpleado(Integer.parseInt(fNumero.getText().trim()));
-        e.setNombre(fNombre.getText().trim());
+
+        String nombre = fNombre.getText().trim();
+        if (nombre.isEmpty())
+            throw new IllegalArgumentException("El nombre es obligatorio.");
+
+        Catalogo posicion = cmbPosicion.getValue();
+        if (posicion == null)
+            throw new IllegalArgumentException("Debe seleccionar una posición.");
+
+        Catalogo departamento = cmbDepartamento.getValue();
+        if (departamento == null)
+            throw new IllegalArgumentException("Debe seleccionar un departamento.");
+
+        e.setNombre(nombre);
         e.setDireccion(fDireccion.getText().trim());
-        e.setPosicion(fPosicion.getText().trim());
+        e.setPosicionId(posicion.getId());
         e.setCelular(fCelular.getText().trim());
-        e.setDepartamento(fDepartamento.getText().trim());
         e.setCorreo(fCorreo.getText().trim());
+        e.setDepartamentoId(departamento.getId());
+
+        Localizacion loc = cmbLocalizacion.getValue();
+        e.setLocalizacionId(loc != null && loc.getId() > 0 ? loc.getId() : 0);
+
         e.setSalarioPorHora(parseDouble(fSalario, "Salario por hora"));
-        e.setTiempoExtra1(parseDouble(fExtra1, "Tiempo extra 1"));
-        e.setTiempoExtra2(parseDouble(fExtra2, "Tiempo extra 2"));
-        e.setTiempoExtra3(parseDouble(fExtra3, "Tiempo extra 3"));
+        e.setTiempoExtra1(parseDouble(fExtra1, "Factor extra 1"));
+        e.setTiempoExtra2(parseDouble(fExtra2, "Factor extra 2"));
+        e.setTiempoExtra3(parseDouble(fExtra3, "Factor extra 3"));
+
         return e;
     }
 
@@ -273,12 +375,14 @@ public class EmpleadosController {
         try {
             return Double.parseDouble(texto.replace(",", "."));
         } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException(
-                    "'" + nombreCampo + "' debe ser un número válido.");
+            throw new IllegalArgumentException("«" + nombreCampo + "» debe ser un número válido.");
         }
     }
 
-    // ─── Helpers de UI ───────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════
+    //  HELPERS DE UI
+    // ════════════════════════════════════════════════════════════════
+
     private void mostrarError(String msg) {
         mensajeLabel.setText("⚠ " + msg);
         mensajeLabel.getStyleClass().removeAll("mensaje-exito");

@@ -1,93 +1,263 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="600" prefWidth="900"
-            xmlns="http://javafx.com/javafx/16"
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.gman.presentation.controller.CatalogoController">
-    <VBox AnchorPane.topAnchor="0"
-          AnchorPane.bottomAnchor="0"
-          AnchorPane.leftAnchor="0"
-          AnchorPane.rightAnchor="0"
+            fx:controller="com.example.gman.presentation.controller.CatalogoController"
+            styleClass="content-area">
+
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
           spacing="0">
-        <!-- HEADER -->
-        <HBox styleClass="modulo-header"
-              alignment="CENTER_LEFT"
-              spacing="16">
-            <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label text="Gestión de Catálogos"
-                       styleClass="modulo-titulo"/>
-                <Label text="Administre los catálogos del sistema"
+
+        <!-- ── HEADER ─────────────────────────────────────────────── -->
+        <HBox styleClass="modulo-header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+            <Label text="📁" styleClass="modulo-icono"/>
+            <VBox spacing="2">
+                <Label text="Catálogos" styleClass="modulo-titulo"/>
+                <Label text="Administración de tablas de referencia del sistema"
                        styleClass="modulo-subtitulo"/>
             </VBox>
         </HBox>
-        <!-- CARDS -->
-        <FlowPane hgap="20"
-                  vgap="20"
-                  style="-fx-padding: 20;"
-                  prefWrapLength="850">
-            <!-- Departamento -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Departamento" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoDepartamento"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Código de Falla -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Código de Falla" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoCodigoFalla"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Tipos de Equipo -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Tipos de Equipo" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoTipoEquipo"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Proveedores -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Proveedores" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoProveedor"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Equipos -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Equipos" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoEquipo"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Localizaciones -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Localizaciones" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevaLocalizacion"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Empleados -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Empleados" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoEmpleado"
-                        styleClass="btn-secundario"/>
-            </VBox>
-            <!-- Misceláneos -->
-            <VBox styleClass="card-catalogo">
-                <Label text="Misceláneos" styleClass="card-title"/>
-                <Button text="Agregar"
-                        onAction="#nuevoMiscelaneo"
-                        styleClass="btn-secundario"/>
-            </VBox>
-        </FlowPane>
-        <!-- FOOTER -->
-        <Label text="GMAN"
-               style="-fx-font-size: 18px; -fx-font-weight: bold;"
-               AnchorPane.bottomAnchor="10"
-               AnchorPane.rightAnchor="10"/>
+
+        <Separator/>
+
+        <!-- ── ÁREA DE CONTENIDO DINÁMICO ────────────────────────── -->
+        <!-- Cuando se selecciona un sub-catálogo, se reemplaza por la tabla CRUD -->
+        <StackPane VBox.vgrow="ALWAYS">
+
+            <!-- PANEL HUB — cards de sub-catálogos -->
+            <ScrollPane fx:id="scrollHub" fitToWidth="true" styleClass="scroll-transparente">
+                <VBox spacing="24" styleClass="hub-container">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+                    <!-- Fila 1 -->
+                    <HBox spacing="16">
+                        <VBox fx:id="cardDepartamento" styleClass="catalog-card" onMouseClicked="#openDepartamento"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🏢" styleClass="card-icon"/>
+                            <Label text="Departamentos" styleClass="card-title"/>
+                            <Label text="Áreas organizacionales" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardPosicion" styleClass="catalog-card" onMouseClicked="#openPosicion"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="👷" styleClass="card-icon"/>
+                            <Label text="Posiciones" styleClass="card-title"/>
+                            <Label text="Cargos de empleados" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardArea" styleClass="catalog-card" onMouseClicked="#openArea"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🗺" styleClass="card-icon"/>
+                            <Label text="Áreas" styleClass="card-title"/>
+                            <Label text="Zonas físicas de la planta" styleClass="card-desc"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Fila 2 -->
+                    <HBox spacing="16">
+                        <VBox fx:id="cardTipoEquipo" styleClass="catalog-card" onMouseClicked="#openTipoEquipo"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="⚙" styleClass="card-icon"/>
+                            <Label text="Tipos de Equipo" styleClass="card-title"/>
+                            <Label text="Clasificación de equipos" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardCriticidad" styleClass="catalog-card" onMouseClicked="#openCriticidad"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="⚠" styleClass="card-icon"/>
+                            <Label text="Criticidad" styleClass="card-title"/>
+                            <Label text="Niveles de criticidad" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardFalla" styleClass="catalog-card" onMouseClicked="#openFalla"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🔧" styleClass="card-icon"/>
+                            <Label text="Códigos de Falla" styleClass="card-title"/>
+                            <Label text="Tipos de falla registrables" styleClass="card-desc"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Fila 3 -->
+                    <HBox spacing="16">
+                        <VBox fx:id="cardTipoOT" styleClass="catalog-card" onMouseClicked="#openTipoOT"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="📋" styleClass="card-icon"/>
+                            <Label text="Tipos de OT" styleClass="card-title"/>
+                            <Label text="Correctivo, preventivo, etc." styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardEstadoOT" styleClass="catalog-card" onMouseClicked="#openEstadoOT"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🔄" styleClass="card-icon"/>
+                            <Label text="Estados de OT" styleClass="card-title"/>
+                            <Label text="Abierta, en proceso, cerrada" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardPrioridad" styleClass="catalog-card" onMouseClicked="#openPrioridad"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🚦" styleClass="card-icon"/>
+                            <Label text="Prioridades" styleClass="card-title"/>
+                            <Label text="Alta, media, baja" styleClass="card-desc"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Fila 4 -->
+                    <HBox spacing="16">
+                        <VBox fx:id="cardEstadoEquipo" styleClass="catalog-card" onMouseClicked="#openEstadoEquipo"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🖥" styleClass="card-icon"/>
+                            <Label text="Estados de Equipo" styleClass="card-title"/>
+                            <Label text="Operativo, fuera de servicio" styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardTipoInstruccion" styleClass="catalog-card" onMouseClicked="#openTipoInstruccion"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="📄" styleClass="card-icon"/>
+                            <Label text="Tipos de Instrucción" styleClass="card-title"/>
+                            <Label text="Inspección, lubricación, etc." styleClass="card-desc"/>
+                        </VBox>
+                        <VBox fx:id="cardMiscelaneo" styleClass="catalog-card" onMouseClicked="#openMiscelaneo"
+                              HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="📦" styleClass="card-icon"/>
+                            <Label text="Misceláneos" styleClass="card-title"/>
+                            <Label text="Valores de uso general" styleClass="card-desc"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Fila 5 — Proveedores (tabla propia) -->
+                    <HBox spacing="16">
+                        <VBox fx:id="cardProveedores" styleClass="catalog-card catalog-card-wide"
+                              onMouseClicked="#openProveedores" HBox.hgrow="ALWAYS">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Label text="🏭" styleClass="card-icon"/>
+                            <Label text="Proveedores" styleClass="card-title"/>
+                            <Label text="Empresas y contactos suministradores" styleClass="card-desc"/>
+                        </VBox>
+                        <!-- Placeholder para mantener el grid -->
+                        <VBox HBox.hgrow="ALWAYS"/>
+                        <VBox HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- PANEL CRUD — se muestra al seleccionar un sub-catálogo -->
+            <AnchorPane fx:id="panelCrud" visible="false" managed="false">
+
+                <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                      AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
+                      spacing="0">
+
+                    <!-- Sub-header con título y botón volver -->
+                    <HBox styleClass="crud-subheader" alignment="CENTER_LEFT" spacing="12">
+                        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+                        <Button fx:id="btnVolver" text="← Volver" styleClass="btn-volver"
+                                onAction="#volverAlHub"/>
+                        <Label fx:id="lblSubcatalogo" text="" styleClass="crud-subheader-title"/>
+                        <HBox HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnAgregar" text="+ Agregar" styleClass="btn-primary"
+                                onAction="#abrirFormAgregar"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- Tabla de registros -->
+                    <TableView fx:id="tablaCatalogo" VBox.vgrow="ALWAYS" styleClass="tabla-gman">
+                        <placeholder>
+                            <Label text="Sin registros" styleClass="table-placeholder"/>
+                        </placeholder>
+                        <columns>
+                            <TableColumn fx:id="colCodigo"      text="Código"      prefWidth="140"/>
+                            <TableColumn fx:id="colNombre"      text="Nombre"      prefWidth="220"/>
+                            <TableColumn fx:id="colDescripcion" text="Descripción" prefWidth="300"/>
+                            <TableColumn fx:id="colAcciones"    text="Acciones"    prefWidth="130"/>
+                        </columns>
+                    </TableView>
+
+                </VBox>
+
+                <!-- ── FORMULARIO OVERLAY ──────────────────────────── -->
+                <StackPane fx:id="overlayForm" visible="false" managed="false"
+                           styleClass="overlay-backdrop"
+                           AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                    <VBox styleClass="form-card" maxWidth="420" spacing="16">
+                        <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                        <Label fx:id="lblFormTitulo" text="Agregar Registro"
+                               styleClass="form-title"/>
+                        <Separator/>
+
+                        <GridPane hgap="12" vgap="14">
+                            <padding><Insets top="8"/></padding>
+
+                            <Label text="Código *" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   styleClass="form-label"/>
+                            <TextField fx:id="txtCodigo" promptText="Ej. DEP-04"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                       prefWidth="220" styleClass="form-field"/>
+
+                            <Label text="Nombre *" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                                   styleClass="form-label"/>
+                            <TextField fx:id="txtNombre" promptText="Nombre del registro"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1"
+                                       prefWidth="220" styleClass="form-field"/>
+
+                            <Label text="Descripción" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                                   styleClass="form-label"/>
+                            <TextArea fx:id="txtDescripcion" promptText="Descripción opcional"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="2"
+                                      prefWidth="220" prefHeight="72" wrapText="true"
+                                      styleClass="form-field"/>
+                        </GridPane>
+
+                        <Label fx:id="lblError" text="" styleClass="form-error" wrapText="true"/>
+
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <Button text="Cancelar" styleClass="btn-secondary" onAction="#cerrarForm"/>
+                            <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                                    onAction="#guardarRegistro"/>
+                        </HBox>
+                    </VBox>
+
+                </StackPane>
+
+                <!-- ── DIÁLOGO CONFIRMAR ELIMINACIÓN ──────────────── -->
+                <StackPane fx:id="overlayConfirmar" visible="false" managed="false"
+                           styleClass="overlay-backdrop"
+                           AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                    <VBox styleClass="form-card" maxWidth="360" spacing="16" alignment="CENTER">
+                        <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+                        <Label text="⚠ Eliminar registro" styleClass="form-title"/>
+                        <Label fx:id="lblConfirmarMsg"
+                               text="¿Seguro que desea eliminar este registro?"
+                               styleClass="form-label" wrapText="true" textAlignment="CENTER"/>
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text="Cancelar"  styleClass="btn-secondary" onAction="#cerrarConfirmar"/>
+                            <Button text="Eliminar"  styleClass="btn-danger"    onAction="#confirmarEliminar"/>
+                        </HBox>
+                    </VBox>
+
+                </StackPane>
+
+            </AnchorPane>
+
+        </StackPane>
+
     </VBox>
+
 </AnchorPane>
-<!---->

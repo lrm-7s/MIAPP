@@ -38,10 +38,15 @@ public class LoginController {
             return;
         }
 
-        if (viewModel.login(user, pass)) {
-            coordinator.onLoginSuccess();
-        } else {
-            viewModel.setLoginMessage("Usuario o contraseña incorrectos");
+        try {
+            if (viewModel.login(user, pass)) {
+                coordinator.onLoginSuccess();
+            } else {
+                viewModel.setLoginMessage("Usuario o contraseña incorrectos");
+            }
+        } catch (Exception e) {
+            viewModel.setLoginMessage("Error al conectar: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

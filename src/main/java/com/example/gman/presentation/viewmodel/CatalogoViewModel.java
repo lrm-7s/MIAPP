@@ -2,90 +2,107 @@ package com.example.gman.presentation.viewmodel;
 
 import com.example.gman.application.service.CatalogoService;
 import com.example.gman.domain.model.Catalogo;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
-import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * ViewModel del módulo Catálogos.
+ * Actúa como intermediario entre el Controller y el Service,
+ * validando reglas de presentación antes de delegar al servicio.
+ */
 public class CatalogoViewModel {
 
     private final CatalogoService service;
-
-    // Lista completa y lista filtrada por tipo activo
-    private final ObservableList<Catalogo> items =
-            FXCollections.observableArrayList();
-
-    private String tipoActivo = null; // null = todos
 
     public CatalogoViewModel(CatalogoService service) {
         this.service = service;
     }
 
-    // ─── Lista observable para la tabla ─────────────────────────────
-    public ObservableList<Catalogo> getItems() {
-        return items;
+    // ════════════════════════════════════════════════════════════════
+    //  CATÁLOGO GENÉRICO (tabla catalogo)
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Retorna todos los registros de un tipo específico.
+     * Ej: listarPorTipo("DEPARTAMENTO")
+     */
+    public List<Catalogo> listarPorTipo(String tipo) {
+        if (tipo == null || tipo.isBlank())
+            throw new IllegalArgumentException("El tipo de catálogo no puede estar vacío.");
+        return service.listarPorTipo(tipo);
     }
 
-    // ─── Cargar todos ────────────────────────────────────────────────
-    public void cargarTodos() throws SQLException {
-        items.clear();
-        items.addAll(service.getAll());
-        tipoActivo = null;
+    /**
+     * Retorna todos los registros de todos los tipos.
+     * Útil para poblar combos en otros módulos.
+     */
+    public List<Catalogo> listarTodos() {
+        return service.listarTodos();
     }
 
-    // ─── Cargar por tipo (card seleccionada) ─────────────────────────
-    public void cargarPorTipo(String tipo) throws SQLException {
-        items.clear();
-        List<Catalogo> lista = service.getByTipo(tipo);
-        items.addAll(lista);
-        tipoActivo = tipo;
+    /**
+     * Retorna registros de un tipo para usarlos en un ComboBox.
+     * Equivalente a listarPorTipo pero semánticamente claro.
+     */
+    public List<Catalogo> obtenerParaCombo(String tipo) {
+        return listarPorTipo(tipo);
     }
 
-    // ─── Crear ───────────────────────────────────────────────────────
-    public void crear(Catalogo c) throws SQLException {
+    /**
+     * Crea un nuevo registro en el catálogo.
+     */
+    public void crear(String tipo, String codigo, String nombre, String descripcion) {
+        validarCamposObligatorios(codigo, nombre);
+        Catalogo c = new Catalogo();
+        c.setTipo(tipo.toUpperCase().trim());
+        c.setCodigo(codigo.toUpperCase().trim());
+        c.setNombre(nombre.trim());
+        c.setDescripcion(descripcion);
         service.crear(c);
-        recargar();
     }
 
-    // ─── Actualizar ──────────────────────────────────────────────────
-    public void actualizar(Catalogo c) throws SQLException {
-        service.actualizar(c);
-        recargar();
+    /**
+     * Actualiza un registro existente.
+     */
+    public void actualizar(Catalogo catalogo) {
+        if (catalogo.getId() <= 0)
+            throw new IllegalArgumentException("ID de registro inválido.");
+        validarCamposObligatorios(catalogo.getCodigo(), catalogo.getNombre());
+        catalogo.setCodigo(catalogo.getCodigo().toUpperCase().trim());
+        catalogo.setNombre(catalogo.getNombre().trim());
+        service.actualizar(catalogo);
     }
 
-    // ─── Eliminar ────────────────────────────────────────────────────
-    public void eliminar(int id) throws SQLException {
+    /**
+     * Elimina un registro por su ID.
+     * Lanza excepción si el servicio detecta que está en uso (FK constraint).
+     */
+    public void eliminar(int id) {
+        if (id <= 0) throw new IllegalArgumentException("ID inválido.");
         service.eliminar(id);
-        recargar();
     }
 
-    // ─── Filtrar por texto ───────────────────────────────────────────
-    public ObservableList<Catalogo> filtrar(String texto) {
-        if (texto == null || texto.isBlank()) return items;
+    // ════════════════════════════════════════════════════════════════
+    //  PROVEEDORES — mapeados a Catalogo para reutilizar la vista
+    // ════════════════════════════════════════════════════════════════
 
-        String lower = texto.toLowerCase();
-        ObservableList<Catalogo> filtrados = FXCollections.observableArrayList();
-
-        for (Catalogo c : items) {
-            boolean coincide =
-                    c.getNombre().toLowerCase().contains(lower) ||
-                            c.getCodigo().toLowerCase().contains(lower) ||
-                            c.getTipo().toLowerCase().contains(lower);
-            if (coincide) filtrados.add(c);
-        }
-        return filtrados;
+    /**
+     * Devuelve los proveedores como lista de Catalogo (codigo=codigo, nombre=nombre).
+     * Permite reutilizar la TableView genérica sin un FXML extra.
+     * Para gestión completa de proveedores se usaría ProveedorController dedicado.
+     */
+    public List<Catalogo> listarProveedoresComoItems() {
+        return service.listarProveedoresComoItems();
     }
 
-    // ─── Tipo activo ─────────────────────────────────────────────────
-    public String getTipoActivo() { return tipoActivo; }
+    // ════════════════════════════════════════════════════════════════
+    //  VALIDACIONES COMUNES
+    // ════════════════════════════════════════════════════════════════
 
-    // ─── Recarga según contexto actual ──────────────────────────────
-    private void recargar() throws SQLException {
-        if (tipoActivo != null) {
-            cargarPorTipo(tipoActivo);
-        } else {
-            cargarTodos();
-        }
+    private void validarCamposObligatorios(String codigo, String nombre) {
+        if (codigo == null || codigo.isBlank())
+            throw new IllegalArgumentException("El código es obligatorio.");
+        if (nombre == null || nombre.isBlank())
+            throw new IllegalArgumentException("El nombre es obligatorio.");
     }
 }
